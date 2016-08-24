@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<hdevelop file_version="1.1" halcon_version="12.0">
+<procedure name="main">
+<interface/>
+<body>
+<c>* This script grabs useful images/data from EnsensoN35 </c>
+<c>* and gets/sets parameters and configuration individually or from a file</c>
+<c></c>
+<c>*==========================================</c>
+<c>* Pre-Trigger</c>
+<c>*==========================================</c>
+<l>AcqHandle := 1</l>
+<l>NxLibHandle := 1</l>
+<c>* Open the first available stereo camera</c>
+<l>info_framegrabber ('Ensenso-NxLib', 'info_boards', Information, Serial)</l>
+<l>ensenso_initialize (TestImage, Serial, 5, 'false', 'true', 'true', 'false', [], [], AcqHandle, NxLibHandle)   </l>
+<c></c>
+<c>*read settings from a file</c>
+<c>*TODO : finish this~!!!!</c>
+<l>ensenso_read_settings (NxLibHandle, 'file://settings.json', EnsensoParamNames, EnsensoParamValues, EnsensoParameters)</l>
+<c></c>
+<c>*get settings from the device (use AcqHandle, not NxLibHandle)</c>
+<l>ensenso_get_settings (AcqHandle, EnsensoParameters, ParameterNames, ParameterValues)</l>
+<c></c>
+<c>*save the settings to a json file that matches the one from NxView</c>
+<l>open_file ('C:/temp/mySettings.json', 'output', FileHandle)</l>
+<l>fwrite_string(FileHandle,EnsensoParameters)</l>
+<l>close_file(FileHandle)</l>
+<c></c>
+<c>*set ensenso parameters individually or as a tuple.  </c>
+<c>* Note: EnsensoParameters is applied first, then ParameterNames and ParameterValues</c>
+<l>ParameterNames := ['Parameters/Capture/UseDisparityMapAreaOfInterest']</l>
+<l>ParameterValues := ['true']</l>
+<l>ensenso_set_settings (AcqHandle, EnsensoParameters, ParameterNames, ParameterValues)</l>
+<c></c>
+<c>*read calibration from a file</c>
+<l>ensenso_read_calibration ('calib.json', CalParameterNames, CalParameterValues)</l>
+<c></c>
+<c>*get calibration from the device</c>
+<l>ensenso_get_calibration (AcqHandle, CalParameterNames, CalParameterValues, CalibrationJSON)</l>
+<c></c>
+<c>*set device calibration</c>
+<c>* Note: CalParameters is applied first, then CalNames and CalValues</c>
+<l>ensenso_set_calibration (AcqHandle, CalibrationJSON, CalParameterNames, CalParameterValues)</l>
+<c></c>
+<c>*set device pose</c>
+<l>PoseInWorldCoordinates := [0,20,1000,5,0,0,0]</l>
+<l>ensenso_set_pose (AcqHandle, PoseInWorldCoordinates)</l>
+<c></c>
+<c>*get device pose</c>
+<c>*TODO: retrieve serial number from device to get parameter, verify if cameraPose or poseInverted are correct pose</c>
+<l>GenParamNames := ['pose',   'pose_order']</l>
+<l>GenParamValues := ['world', 'gba']</l>
+<l>ensenso_get_pose (NxLibHandle, GenParamNames, GenParamValues, EnsensoPose)</l>
+<c></c>
+<c>* Assign Exposure levels</c>
+<l>Exposure3D:=4</l>
+<l>ExposureGray:=6</l>
+<c>   </c>
+<c>*==========================================</c>
+<c>* Online </c>
+<c>*==========================================</c>
+<c></c>
+<c>*general purpose grab procedure, returns nothing by default, specify the data you want with gen param names and values</c>
+<c>*TODO: implement FLEXVIEW setting</c>
+<l>GenParamNames := ['xyz',  'left_rect', 'right_rect', 'disparity', 'regions', 'light_on', 'flexview']</l>
+<l>GenParamValues :=['true', 'true',      'true',       'false',     'false',   'false',    3]</l>
+<l>ensenso_grab (Images, Regions, AcqHandle, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder)</l>
+<l>stop()</l>
+<c>*==========================================</c>
+<c>* Post Process/Cleanup </c>
+<c>*==========================================</c>
+<c></c>
+<c>*Opening frame grabber takes for-ever (several seconds) so only close when idle</c>
+<l>ensenso_try_close (AcqHandle, NxLibHandle)</l>
+<c></c>
+</body>
+<docu id="main">
+<parameters/>
+</docu>
+</procedure>
+<procedure name="organize_windows">
+<interface>
+<io>
+<par name="Images" base_type="iconic" dimension="0"/>
+</io>
+<oc>
+<par name="NumImages" base_type="ctrl" dimension="0"/>
+<par name="NumChannels" base_type="ctrl" dimension="0"/>
+<par name="XPos" base_type="ctrl" dimension="0"/>
+<par name="YPos" base_type="ctrl" dimension="0"/>
+<par name="WindowHandle" base_type="ctrl" dimension="0"/>
+<par name="Channels" base_type="ctrl" dimension="0"/>
+<par name="SumChannels" base_type="ctrl" dimension="0"/>
+<par name="Index" base_type="ctrl" dimension="0"/>
+<par name="NewWindowHandle" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>NumImages := 0</l>
+<l>NumChannels := 0</l>
+<l>XPos := 0</l>
+<l>YPos := 0</l>
+<l>WindowHandle := []</l>
+<l>count_channels (Images, Channels)</l>
+<l>tuple_sum (Channels, SumChannels)</l>
+<l>tuple_length (Channels, NumImages)</l>
+<c>* </c>
+<c>* Open Windows for Camera1, Camera2, Y,Y,Z</c>
+<l>for Index := 0 to SumChannels - 1 by 1</l>
+<l>    dev_open_window (YPos, XPos, 320, 240, 'black', NewWindowHandle)</l>
+<l>    tuple_concat (WindowHandle, NewWindowHandle, WindowHandle)</l>
+<l>    XPos := XPos + 330</l>
+<l>    if (Index == 1)</l>
+<l>        XPos := 0</l>
+<l>        YPos := YPos + 265</l>
+<l>    endif</l>
+<l>endfor</l>
+<l>return ()</l>
+</body>
+<docu id="organize_windows">
+<parameters>
+<parameter id="Channels"/>
+<parameter id="Images"/>
+<parameter id="Index"/>
+<parameter id="NewWindowHandle"/>
+<parameter id="NumChannels"/>
+<parameter id="NumImages"/>
+<parameter id="SumChannels"/>
+<parameter id="WindowHandle"/>
+<parameter id="XPos"/>
+<parameter id="YPos"/>
+</parameters>
+</docu>
+</procedure>
+</hdevelop>

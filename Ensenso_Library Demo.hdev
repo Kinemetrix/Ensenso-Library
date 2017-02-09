@@ -1,14 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.1" halcon_version="12.0">
+<hdevelop file_version="1.1" halcon_version="13.0">
 <procedure name="main">
 <interface/>
 <body>
 <c>* This script grabs useful images/data from EnsensoN35 </c>
 <c>* and gets/sets parameters and configuration individually or from a file</c>
 <c></c>
-<c>*==========================================</c>
+<c></c>
+<c>*NOMENCLATURE</c>
+<c>*==============================</c>
+<c>*READ = read from a file</c>
+<c>*GET  = get from a device</c>
+<c>*SET  = set a device parameter</c>
+<c></c>
+<c></c>
+<c></c>
+<c>*====================================================================================</c>
 <c>* Pre-Trigger</c>
-<c>*==========================================</c>
+<c>*====================================================================================</c>
 <l>AcqHandle := 1</l>
 <l>NxLibHandle := 1</l>
 <c>* Open the first available stereo camera</c>
@@ -16,8 +25,7 @@
 <l>ensenso_initialize (TestImage, Serial, 5, 'false', 'true', 'true', 'false', [], [], AcqHandle, NxLibHandle)   </l>
 <c></c>
 <c>*read settings from a file</c>
-<c>*TODO : finish this~!!!!</c>
-<l>ensenso_read_settings (NxLibHandle, 'file://settings.json', EnsensoParamNames, EnsensoParamValues, EnsensoParameters)</l>
+<l>ensenso_read_settings ('parameters.json', EnsensoParamNames, EnsensoParamValues, ParametersJSON)</l>
 <c></c>
 <c>*get settings from the device (use AcqHandle, not NxLibHandle)</c>
 <l>ensenso_get_settings (AcqHandle, EnsensoParameters, ParameterNames, ParameterValues)</l>
@@ -31,49 +39,122 @@
 <c>* Note: EnsensoParameters is applied first, then ParameterNames and ParameterValues</c>
 <l>ParameterNames := ['Parameters/Capture/UseDisparityMapAreaOfInterest']</l>
 <l>ParameterValues := ['true']</l>
-<l>ensenso_set_settings (AcqHandle, EnsensoParameters, ParameterNames, ParameterValues)</l>
+<l>ensenso_set_settings (AcqHandle, ParametersJSON, ParameterNames, ParameterValues)</l>
 <c></c>
-<c>*read calibration from a file</c>
-<l>ensenso_read_calibration ('calib.json', CalParameterNames, CalParameterValues)</l>
+<c></c>
 <c></c>
 <c>*get calibration from the device</c>
-<l>ensenso_get_calibration (AcqHandle, CalParameterNames, CalParameterValues, CalibrationJSON)</l>
+<l>ensenso_get_calibration (AcqHandle, CalParameterNames, CalParameterValues, CalibrationJSONFromDevice)</l>
 <c></c>
 <c>*set device calibration</c>
 <c>* Note: CalParameters is applied first, then CalNames and CalValues</c>
+<l>CalParameterNames := []</l>
+<l>CalParameterValues := []</l>
+<l>ensenso_set_calibration (AcqHandle, CalibrationJSONFromDevice, CalParameterNames, CalParameterValues)</l>
+<c></c>
+<c></c>
+<c>*STILL WORKING ON THIS, currently returns text of json in CalibrationJSON only.</c>
+<c>*read calibration from a file</c>
+<l>ensenso_read_calibration ('calibration.json', CalParameterNames, CalParameterValues, CalibrationJSON)</l>
+<c></c>
+<c>*set device calibration</c>
+<c>* Note: CalParameters is applied first, then CalNames and CalValues</c>
+<l>CalParameterNames := []</l>
+<l>CalParameterValues := []</l>
 <l>ensenso_set_calibration (AcqHandle, CalibrationJSON, CalParameterNames, CalParameterValues)</l>
 <c></c>
-<c>*set device pose</c>
-<l>PoseInWorldCoordinates := [0,20,1000,5,0,0,0]</l>
-<l>ensenso_set_pose (AcqHandle, PoseInWorldCoordinates)</l>
 <c></c>
-<c>*get device pose</c>
-<c>*TODO: retrieve serial number from device to get parameter, verify if cameraPose or poseInverted are correct pose</c>
-<l>GenParamNames := ['pose',   'pose_order']</l>
-<l>GenParamValues := ['world', 'gba']</l>
-<l>ensenso_get_pose (NxLibHandle, GenParamNames, GenParamValues, EnsensoPose)</l>
+<c></c>
 <c></c>
 <c>* Assign Exposure levels</c>
 <l>Exposure3D:=4</l>
 <l>ExposureGray:=6</l>
 <c>   </c>
-<c>*==========================================</c>
+<c>*====================================================================================</c>
 <c>* Online </c>
-<c>*==========================================</c>
+<c>*====================================================================================</c>
 <c></c>
 <c>*general purpose grab procedure, returns nothing by default, specify the data you want with gen param names and values</c>
 <c>*TODO: implement FLEXVIEW setting</c>
 <l>GenParamNames := ['xyz',  'left_rect', 'right_rect', 'disparity', 'regions', 'light_on', 'flexview']</l>
 <l>GenParamValues :=['true', 'true',      'true',       'false',     'false',   'false',    3]</l>
 <l>ensenso_grab (Images, Regions, AcqHandle, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder)</l>
+<l>select_obj(Images,X,1)</l>
+<l>select_obj(Images,Y,2)</l>
+<l>select_obj(Images,Z,3)</l>
+<c></c>
+<c></c>
+<l>xyz_to_object_model_3d (X,Y,Z,OM3D)</l>
 <l>stop()</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c>*==========================================</c>
+<c>* DEMO: Swap calibration each shot</c>
+<c>*==========================================</c>
+<c></c>
+<c>*read calibration from a file</c>
+<l>ensenso_read_calibration ('calibration.json', CalParameterNames, CalParameterValues, CalibrationJSON1)</l>
+<c></c>
+<c>*read calibration from a file</c>
+<l>ensenso_read_calibration ('calibration3.json', CalParameterNames, CalParameterValues, CalibrationJSON2)</l>
+<c></c>
+<c></c>
+<l>count_seconds(start)</l>
+<l>for i:=0 to 10 by 1</l>
+<l>    if(i%2 = 1)</l>
+<l>        CALIB := CalibrationJSON1</l>
+<l>    else</l>
+<l>        CALIB := CalibrationJSON2</l>
+<l>    endif</l>
+<c>    </c>
+<c>    </c>
+<c>    *set device calibration</c>
+<c>    * Note: CalParameters is applied first, then CalNames and CalValues</c>
+<l>    CalParameterNames := []</l>
+<l>    CalParameterValues := []</l>
+<l>    ensenso_set_calibration (AcqHandle, CALIB, CalParameterNames, CalParameterValues)</l>
+<c>    </c>
+<c>    *get device pose</c>
+<l>    GenParamNames := ['pose',   'pose_order']</l>
+<l>    GenParamValues := ['world', 'gba']</l>
+<l>    ensenso_get_pose (NxLibHandle, GenParamNames, GenParamValues, EnsensoPose)</l>
+<c>    </c>
+<l>    GenParamNames := ['xyz',  'left_rect', 'right_rect', 'disparity', 'regions', 'light_on', 'flexview']</l>
+<l>    GenParamValues :=['true', 'true',      'true',       'false',     'false',   'false',    1]</l>
+<l>    ensenso_grab (Images, Regions, AcqHandle, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder)</l>
+<l>    dev_display(Images)</l>
+<l>    disp_message(200000, 'Ensenso Pose','window', 12, 12, 'black', 'true')</l>
+<l>    disp_message(200000, EnsensoPose,'window',34, 12, 'black', 'true')</l>
+<l>endfor</l>
+<l>count_seconds(end)</l>
+<l>average := ((end-start)/10.0)</l>
+<l>disp_message(200000, 'average cycle time (10 iterations) = ' + average + ' sec','window', 200, 12, 'black', 'true')</l>
+<l>disp_continue_message(200000,'black', 'true')</l>
+<c></c>
+<c></c>
+<c></c>
+<c>*==========================================</c>
+<c>* DEMO: Change ensenso pose</c>
+<c>*==========================================</c>
+<c></c>
+<c>*set device pose</c>
+<l>PoseInWorldCoordinates := [0,20,1000,5,0,0,0]</l>
+<l>ensenso_set_pose (NxLibHandle, PoseInWorldCoordinates)</l>
+<c></c>
+<c></c>
+<c></c>
 <c>*==========================================</c>
 <c>* Post Process/Cleanup </c>
 <c>*==========================================</c>
 <c></c>
 <c>*Opening frame grabber takes for-ever (several seconds) so only close when idle</c>
 <l>ensenso_try_close (AcqHandle, NxLibHandle)</l>
-<c></c>
 </body>
 <docu id="main">
 <parameters/>

@@ -1,0 +1,142 @@
+{
+	"Capture": {
+		"AbsoluteBlackLevelOffset": 0,
+		"AutoBlackLevel": false,
+		"AutoExposure": false,
+		"AutoGain": false,
+		"Binning": 1,
+		"BlackLevelOffset": 1,
+		"Exposure": 13.929824561403507,
+		"FlashDelay": -0.050000000000000003,
+		"FlexView": 4,
+		"FrontLight": false,
+		"Gain": 1,
+		"GainBoost": false,
+		"HardwareGamma": true,
+		"Hdr": false,
+		"MaxFlashTime": 10,
+		"MaxGain": 4,
+		"PixelClock": 30,
+		"Projector": true,
+		"TargetBrightness": 93,
+		"TriggerMode": "Software",
+		"Triggered": true,
+		"UseDisparityMapAreaOfInterest": false
+	},
+	"DisparityMap": {
+		"AreaOfInterest": {
+			"LeftTop": [
+				0,
+				0
+			],
+			"RightBottom": [
+				1279,
+				1023
+			]
+		},
+		"MeasurementVolume": {
+			"Far": {
+				"DisparityStep": 76.154927781332319,
+				"LeftBottom": [
+					0,
+					0,
+					1.7976931348623157e+308
+				],
+				"LeftTop": [
+					0,
+					0,
+					1.7976931348623157e+308
+				],
+				"PixelSize": 1.7976931348623157e+308,
+				"RightBottom": [
+					0,
+					0,
+					1.7976931348623157e+308
+				],
+				"RightTop": [
+					0,
+					0,
+					1.7976931348623157e+308
+				]
+			},
+			"Near": {
+				"DisparityStep": 7.0709850074491305,
+				"LeftBottom": [
+					-498.48639366714616,
+					439.08405212093567,
+					856.29226445964412
+				],
+				"LeftTop": [
+					-498.48639366714616,
+					-410.41173980135648,
+					856.29226445964412
+				],
+				"PixelSize": 0.83039666854574001,
+				"RightBottom": [
+					431.55787510408271,
+					439.08405212093567,
+					856.29226445964412
+				],
+				"RightTop": [
+					431.55787510408271,
+					-410.41173980135648,
+					856.29226445964412
+				]
+			}
+		},
+		"PostProcessing": {
+			"Filling": {
+				"BorderSpread": 1,
+				"RegionSize": 13
+			},
+			"MedianFilterRadius": 0,
+			"SpeckleRemoval": {
+				"ComponentThreshold": 3,
+				"RegionSize": 143
+			},
+			"UniquenessOffset": 16,
+			"UniquenessRatio": 28
+		},
+		"Scaling": 1,
+		"StereoMatching": {
+			"CostScale": -3,
+			"DepthChangeCost": 8,
+			"DepthStepCost": 23,
+			"MinimumDisparity": -147,
+			"NumberOfDisparities": 160,
+			"OptimizationProfile": "AlignedAndDiagonal",
+			"PropagationDecay": 3,
+			"ScaledMinimumDisparity": -147,
+			"ScaledNumberOfDisparities": 160,
+			"ShadowingThreshold": -1
+		},
+		"ValidRegion": {
+			"LeftTop": [
+				12,
+				0
+			],
+			"RightBottom": [
+				1132,
+				1023
+			]
+		}
+	},
+	"IO": {
+		"Input": false,
+		"Output": 13.929824561403507
+	},
+	"Overlay": {
+		"Text": {
+			"Angle": 0,
+			"Color": [
+				255,
+				0,
+				0
+			],
+			"Mirror": {
+				"Horizontal": false,
+				"Vertical": false
+			}
+		}
+	}
+}

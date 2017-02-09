@@ -1,326 +1,191 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<hdevelop file_version="1.1" halcon_version="12.0">
+<hdevelop file_version="1.1" halcon_version="13.0">
 <library/>
-<procedure name="ensenso_initialize">
+<procedure name="ensenso_get_calibration">
 <interface>
-<oo>
-<par name="TestImage" base_type="iconic" dimension="0"/>
-</oo>
 <ic>
-<par name="SerialNumber" base_type="ctrl" dimension="0"/>
-<par name="Exposure" base_type="ctrl" dimension="0"/>
-<par name="GrabRaw" base_type="ctrl" dimension="0"/>
-<par name="GrabRect" base_type="ctrl" dimension="0"/>
-<par name="GrabXYZ" base_type="ctrl" dimension="0"/>
-<par name="GrabRegions" base_type="ctrl" dimension="0"/>
-<par name="GenParamNames" base_type="ctrl" dimension="0"/>
-<par name="GenParamValues" base_type="ctrl" dimension="0"/>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
 </ic>
 <oc>
-<par name="AcqHandle" base_type="ctrl" dimension="0"/>
-<par name="NxLibHandle" base_type="ctrl" dimension="0"/>
+<par name="CalParameterNames" base_type="ctrl" dimension="0"/>
+<par name="CalParameterValues" base_type="ctrl" dimension="0"/>
+<par name="CalibrationJSON" base_type="ctrl" dimension="0"/>
 </oc>
 </interface>
 <body>
 <c></c>
+<c>*read calibration string if you want to write a .json file later</c>
+<l>get_framegrabber_param (AcqHandle, 'Calibration', CalibrationJSON)</l>
 <c></c>
+<c>*NOTE THIS CALIBRATION STRING IS NOT THE SAME AS THE CALIB.JSON FILE FROM NXVIEW, WHICH CONTAINS OTHER INFO</c>
 <c></c>
-<c></c>
-<l>open_framegrabber ('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', -1, 'Rectified', -1, 'default', 'stereo', '', 0, -1, AcqHandle)</l>
-<c></c>
-<l>open_framegrabber ('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', -1, 'Rectified', -1, 'default', 'Item', '', 0, -1, NxLibHandle)</l>
-<c></c>
-<l>set_framegrabber_param(AcqHandle,'auto_grab_data','true')</l>
 <l>return ()</l>
-<c></c>
-<c>*without 'auto_grab_data' following commands would be needed for the same result:</c>
-<l>*set_framegrabber_param (AcqHandle, 'auto_grab_data', 'false')</l>
-<l>*open_framegrabber('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', 0, 'Raw', -1, 'false', 'Item', '/', 0, 0, NxLibHandle)</l>
-<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'Capture')</l>
-<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputeDisparityMap')</l>
-<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputePointMap')</l>
-<l>*grab_data (Image, Region, Contours, AcqHandle, Data)</l>
 </body>
-<docu id="ensenso_initialize">
-<abstract lang="en_US">This procedure simplifies connection / initialization of the Ensenso N-series stereo 3d sensor.</abstract>
-<alternatives>
-<item>open_framegrabber</item>
-</alternatives>
-<keywords lang="en_US">
-<item>ensenso</item>
-</keywords>
-<short lang="en_US">Initialize an Ensenso N-series stereo 3d sensor</short>
+<docu id="ensenso_get_calibration">
+<chapters lang="en_US">
+<item>Ensenso</item>
+</chapters>
+<library lang="en_US">Ensenso</library>
+<short lang="en_US">Get a calibration from the Ensenso camera</short>
 <parameters>
-<parameter id="AcqHandle">
-<description lang="en_US">Handle of the selected Ensenso sensor</description>
-</parameter>
-<parameter id="Exposure">
-<default_value>0</default_value>
-<description lang="en_US">Exposure in milliseconds, choose 0 for auto</description>
-</parameter>
-<parameter id="GenParamNames">
-<default_value>[]</default_value>
-<values>
-<item>'camera_type'</item>
-<item>'color_space'</item>
-<item>'auto_grab_data'</item>
-</values>
-</parameter>
-<parameter id="GenParamValues">
-<default_value>[]</default_value>
-<values>
-<item>'Stereo'</item>
-<item>'Monocular'</item>
-<item>'Raw'</item>
-<item>'Rectified'</item>
-<item>'false'</item>
-<item>'true'</item>
-</values>
-</parameter>
-<parameter id="GrabRaw">
-<default_value>'false'</default_value>
-<description lang="en_US">Grab the raw camera image (not rectified, distorted)</description>
-<value_max>0.00</value_max>
-<value_min>0.00</value_min>
-</parameter>
-<parameter id="GrabRect">
-<default_value>'true'</default_value>
-<description lang="en_US">Grab the rectified camera images</description>
-<value_max>0.00</value_max>
-<value_min>0.00</value_min>
-</parameter>
-<parameter id="GrabRegions">
-<default_value>'false'</default_value>
-<description lang="en_US">Grab the valid regions</description>
-</parameter>
-<parameter id="GrabXYZ">
-<default_value>'true'</default_value>
-<description lang="en_US">Grab the XYZ images</description>
-</parameter>
-<parameter id="NxLibHandle"/>
-<parameter id="SerialNumber">
-<default_value>0</default_value>
-<description lang="en_US">Serial number of the camera.  Get with info_framegrabber('Ensenso-NxLib','info_boards',Information,Values).  Use 0 if there is only one connected to the PC.</description>
-</parameter>
-<parameter id="TestImage"/>
+<parameter id="AcqHandle"/>
+<parameter id="CalParameterNames"/>
+<parameter id="CalParameterValues"/>
+<parameter id="CalibrationJSON"/>
 </parameters>
 </docu>
 </procedure>
-<procedure name="ensenso_grab_rect">
+<procedure name="ensenso_get_pose">
 <interface>
-<oo>
-<par name="RightImage" base_type="iconic" dimension="0"/>
-<par name="LeftImage" base_type="iconic" dimension="0"/>
-</oo>
 <ic>
-<par name="AcqHandle" base_type="ctrl" dimension="0"/>
 <par name="NxLibHandle" base_type="ctrl" dimension="0"/>
-<par name="ExposureMS" base_type="ctrl" dimension="0"/>
 <par name="GenParamNames" base_type="ctrl" dimension="0"/>
 <par name="GenParamValues" base_type="ctrl" dimension="0"/>
 </ic>
+<oc>
+<par name="EnsensoPose" base_type="ctrl" dimension="0"/>
+</oc>
 </interface>
 <body>
+<c></c>
+<l>info_framegrabber ('Ensenso-NxLib', 'device', Information, Serial)</l>
+<c></c>
+<c>*read pose</c>
+<l>get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/', Link)</l>
+<c>*read rotation/angle</c>
+<l>get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Rotation/Angle', RotationAngle)</l>
+<c>*read rotation/axis</c>
+<l>get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Rotation/Axis', RotationAxis)</l>
+<c>*read workspace translation</c>
+<l>get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Translation', WorkspaceTranslation)</l>
+<c></c>
+<l>tuple_regexp_replace(RotationAxis,'\\[','',Result1)</l>
+<l>tuple_regexp_replace(Result1,'\\]','',Result2)</l>
+<l>tuple_split(Result2,',',RotationAxisStrings)</l>
+<l>tuple_number(RotationAxisStrings,RotationAxis)</l>
+<c></c>
+<l>tuple_regexp_replace(WorkspaceTranslation,'\\[','',Result1)</l>
+<l>tuple_regexp_replace(Result1,'\\]','',Result2)</l>
+<l>tuple_split(Result2,',',WorkspaceTranslationStrings)</l>
+<l>tuple_number(WorkspaceTranslationStrings,WorkspaceTranslation)</l>
+<c></c>
+<l>axis_angle_to_quat(RotationAxis[0],RotationAxis[1],RotationAxis[2],RotationAngle,PoseQuaternion)</l>
+<l>quat_to_hom_mat3d (PoseQuaternion,PoseRotationMatrix)</l>
+<l>hom_mat3d_translate(PoseRotationMatrix,WorkspaceTranslation[0],WorkspaceTranslation[1],WorkspaceTranslation[2],PoseHomMat3D)</l>
+<l>hom_mat3d_to_pose (PoseHomMat3D,CameraPose)</l>
+<c></c>
+<c></c>
 <l>if(|GenParamNames| != |GenParamValues|)</l>
 <l>    throw('Number of gen param names and values are not equal')</l>
 <l>endif</l>
 <c></c>
-<l>IsLightOn := 'false'</l>
-<l>IsProjectorOn := 'false'</l>
+<l>Pose := 'world'</l>
+<l>PoseOrder := 'gba'</l>
 <c></c>
-<l>GrabLeft := false</l>
-<l>GrabRight := false</l>
-<c></c>
-<l>for i := 0 to |GenParamNames|-1 by 1</l>
-<l>    if(GenParamNames[i] == 'light_on')</l>
-<l>        if(GenParamValues[i] == 'true')</l>
-<l>            IsLightOn := 'true'</l>
+<l>for i:=0 to |GenParamNames|-1 by 1</l>
+<l>    if(GenParamNames[i] == 'pose')</l>
+<l>        if(GenParamValues[i] == 'world')</l>
+<c>            </c>
 <l>        endif</l>
 <l>    endif</l>
-<l>    if(GenParamNames[i] == 'projector_on')</l>
-<l>        if(GenParamValues[i] == 'true')</l>
-<l>            IsProjectorOn := 'true'</l>
+<l>    if(GenParamNames[i] == 'pose')</l>
+<l>        if(GenParamValues[i] == 'relative')</l>
+<c>            </c>
 <l>        endif</l>
 <l>    endif</l>
-<l>    if(GenParamNames[i] == 'left')</l>
-<l>        if(GenParamValues[i] == 'true')</l>
-<l>            GrabLeft := true</l>
+<l>    if(GenParamNames[i] == 'pose_order')</l>
+<l>        if(GenParamValues[i] == 'abg')</l>
+<l>            PoseOrder := 'abg'</l>
 <l>        endif</l>
 <l>    endif</l>
-<l>    if(GenParamNames[i] == 'right')</l>
-<l>        if(GenParamValues[i] == 'true')</l>
-<l>            GrabRight := true</l>
+<l>    if(GenParamNames[i] == 'pose_order')</l>
+<l>        if(GenParamValues[i] == 'gba')</l>
+<l>            PoseOrder := 'gba'</l>
 <l>        endif</l>
 <l>    endif</l>
 <l>endfor</l>
 <c></c>
-<c>*get auto grab data state and turn it off temporarily</c>
-<l>get_framegrabber_param(AcqHandle,'auto_grab_data',IsAutoGrabData)</l>
-<l>set_framegrabber_param(AcqHandle,'auto_grab_data','false')</l>
 <c></c>
-<c>*set the exposure for the gray images</c>
-<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/Exposure', ExposureMS)</l>
 <c></c>
-<c>*set the front light state</c>
-<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/FrontLight', 'true')</l>
 <c></c>
-<c>*set the projector pattern state</c>
-<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/Projector', 'false')</l>
 <c></c>
-<c>*Grab the L/R Images</c>
-<l>gen_empty_obj(LeftImage)</l>
-<l>gen_empty_obj(RightImage)</l>
-<l>GrabList := []</l>
-<l>if(GrabLeft)</l>
-<l>    tuple_concat(GrabList,'Images/Rectified/Left',GrabList)</l>
-<l>endif</l>
-<l>if(GrabRight)</l>
-<l>    tuple_concat(GrabList,'Images/Rectified/Right',GrabList)</l>
+<l>if(PoseOrder == 'abg')</l>
+<l>    EnsensoPose := CameraPose</l>
+<l>elseif(PoseOrder == 'gba')</l>
+<l>    get_pose_type(CameraPose,OrderOfTransform, OrderOfRotation, ViewOfTransform)</l>
+<l>    convert_pose_type (CameraPose,OrderOfTransform, 'abg', ViewOfTransform, ABGPose)</l>
+<l>    EnsensoPose := ABGPose</l>
 <l>endif</l>
 <c></c>
-<l>set_framegrabber_param (AcqHandle, 'grab_data_items', GrabList)</l>
-<l>set_framegrabber_param (NxLibHandle,'do_execute','Capture')</l>
-<l>set_framegrabber_param (NxLibHandle, 'do_execute', 'RectifyImages')</l>
-<l>grab_data (EnsensoImages, Region, Contours, AcqHandle, Data)</l>
-<c></c>
-<c>*reset auto grab data</c>
-<l>set_framegrabber_param(AcqHandle,'auto_grab_data',IsAutoGrabData)</l>
-<c></c>
-<c>*Split the L/R Image tuple into individual images (select_obj is NOT a deep copy operation)</c>
-<l>try</l>
-<l>    if(GrabLeft)</l>
-<l>        select_obj(EnsensoImages,LeftImage,1)</l>
-<l>    endif</l>
-<l>catch(ex)</l>
-<l>endtry</l>
-<l>try</l>
-<l>    if(GrabLeft)</l>
-<l>        select_obj(EnsensoImages,RightImage,2)</l>
-<l>    elseif(GrabRight)</l>
-<l>        select_obj(EnsensoImages,RightImage,1)</l>
-<l>    endif</l>
-<l>catch(ex)</l>
-<l>endtry</l>
 <l>return ()</l>
 </body>
-<docu id="ensenso_grab_rect">
+<docu id="ensenso_get_pose">
+<abstract lang="en_US">https://github.com/zserge/jsmn/blob/master/jsmn.c
+
+&lt;a href="https://github.com/zserge/jsmn/blob/master/jsmn.c"&gt;&lt;/a&gt;
+
+&lt;a href="https://github.com/zserge/jsmn/blob/master/jsmn.c"&gt;JSMN Test Link&lt;/a&gt;
+
+</abstract>
+<chapters lang="en_US">
+<item>Ensenso</item>
+</chapters>
+<library lang="en_US">Ensenso</library>
 <parameters>
-<parameter id="AcqHandle"/>
-<parameter id="ExposureMS"/>
+<parameter id="EnsensoPose"/>
 <parameter id="GenParamNames"/>
 <parameter id="GenParamValues"/>
-<parameter id="LeftImage"/>
 <parameter id="NxLibHandle"/>
-<parameter id="RightImage"/>
 </parameters>
 </docu>
 </procedure>
-<procedure name="ensenso_grab_xyz">
-<interface>
-<oo>
-<par name="X" base_type="iconic" dimension="0"/>
-<par name="Y" base_type="iconic" dimension="0"/>
-<par name="Z" base_type="iconic" dimension="0"/>
-<par name="Regions" base_type="iconic" dimension="0"/>
-</oo>
-<ic>
-<par name="AcqHandle" base_type="ctrl" dimension="0"/>
-<par name="ExposureMS" base_type="ctrl" dimension="0"/>
-<par name="GenRegions" base_type="ctrl" dimension="0"/>
-</ic>
-</interface>
-<body>
-<l>if(GenRegions == 1)</l>
-<l>    GenRegions := 'true'</l>
-<l>endif</l>
-<c></c>
-<c>* Set the tree items returned when calling 'grab_data'</c>
-<l>set_framegrabber_param (AcqHandle, 'grab_data_items', ['Images/PointMap'])</l>
-<c></c>
-<c>* Prevent regions from being generated/transmitted   </c>
-<l>set_framegrabber_param (AcqHandle, 'generate_regions', GenRegions)</l>
-<c></c>
-<c></c>
-<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/Exposure', ExposureMS)</l>
-<l>grab_data (ImageXYZ, Regions, Contours, AcqHandle, Data)</l>
-<c></c>
-<c>*Split the result data into individual images (access_channel MAY be a deep copy method)</c>
-<l>access_channel (ImageXYZ, X, 1)   </l>
-<l>access_channel (ImageXYZ, Y, 2) </l>
-<l>access_channel (ImageXYZ, Z, 3)</l>
-<l>return ()</l>
-</body>
-<docu id="ensenso_grab_xyz">
-<parameters>
-<parameter id="AcqHandle"/>
-<parameter id="ExposureMS"/>
-<parameter id="GenRegions"/>
-<parameter id="Regions"/>
-<parameter id="X"/>
-<parameter id="Y"/>
-<parameter id="Z"/>
-</parameters>
-</docu>
-</procedure>
-<procedure name="ensenso_read_settings">
+<procedure name="ensenso_get_settings">
 <interface>
 <ic>
 <par name="AcqHandle" base_type="ctrl" dimension="0"/>
-<par name="FilePath" base_type="ctrl" dimension="0"/>
 </ic>
 <oc>
+<par name="EnsensoParameters" base_type="ctrl" dimension="0"/>
 <par name="ParameterNames" base_type="ctrl" dimension="0"/>
 <par name="ParameterValues" base_type="ctrl" dimension="0"/>
-<par name="EnsensoParameters" base_type="ctrl" dimension="0"/>
 </oc>
 </interface>
 <body>
-<c>   *HOperatorSet.GetFramegrabberParam(CamHandle,</c>
-<c>   *                 "file://../lib/settings.json", out CamParams);</c>
-<c>   </c>
 <c>*read parameter string if you want to write a .json file later</c>
-<l>get_framegrabber_param (AcqHandle, FilePath, EnsensoParameters)</l>
+<l>get_framegrabber_param (AcqHandle, 'Parameters', EnsensoParameters)</l>
 <c></c>
-<l>*tuple_regexp_replace(EnsensoParameters,['\t*','replace_all'],'',Result)</l>
-<l>*tuple_split(Result,'\n',SubStrings)</l>
-<l>ParameterNames := []</l>
+<c>*read parameters individually, separating their names and values</c>
+<l>get_framegrabber_param (AcqHandle, 'available_param_names', ParameterNames)</l>
+<l>tuple_sort (ParameterNames, ParameterNames)</l>
+<c></c>
+<c></c>
+<c>* query all current parameter values:</c>
 <l>ParameterValues := []</l>
+<l>get_system ('do_low_error', LowErrorFlag)</l>
+<l>if (LowErrorFlag == 'true')</l>
+<l>  set_system ('do_low_error', 'false')</l>
+<l>endif</l>
+<l>dev_set_check ('~give_error')</l>
+<l>dev_error_var (HalconError, 1)</l>
+<l>for i := 0 to |ParameterNames| - 1 by 1</l>
+<l>  get_framegrabber_param (AcqHandle, ParameterNames[i], value)</l>
+<l>  tuple_concat(ParameterValues, value, ParameterValues)</l>
+<l>endfor</l>
+<l>dev_set_check ('give_error')</l>
+<l>set_system ('do_low_error', LowErrorFlag)</l>
 <l>return ()</l>
 </body>
-<docu id="ensenso_read_settings">
+<docu id="ensenso_get_settings">
+<chapters lang="en_US">
+<item>Ensenso</item>
+</chapters>
+<library lang="en_US">Ensenso</library>
+<short lang="en_US">Get settings from the Ensenso camera</short>
 <parameters>
 <parameter id="AcqHandle"/>
 <parameter id="EnsensoParameters"/>
-<parameter id="FilePath"/>
 <parameter id="ParameterNames"/>
 <parameter id="ParameterValues"/>
-</parameters>
-</docu>
-</procedure>
-<procedure name="ensenso_try_close">
-<interface>
-<ic>
-<par name="AcqHandle" base_type="ctrl" dimension="0"/>
-<par name="NxLibHandle" base_type="ctrl" dimension="0"/>
-</ic>
-</interface>
-<body>
-<c>*ensenso has a handle for the cameras and the NxLib tree root (NxLibHandle).  Both must be closed to release the device.</c>
-<l>try</l>
-<l>close_framegrabber (AcqHandle)</l>
-<l>catch(ex)</l>
-<l>endtry</l>
-<l>try</l>
-<l>close_framegrabber (NxLibHandle)</l>
-<l>catch(ex)</l>
-<l>endtry</l>
-<c></c>
-<l>return ()</l>
-</body>
-<docu id="ensenso_try_close">
-<parameters>
-<parameter id="AcqHandle"/>
-<parameter id="NxLibHandle"/>
 </parameters>
 </docu>
 </procedure>
@@ -527,400 +392,159 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 </parameters>
 </docu>
 </procedure>
-<procedure name="ensenso_get_pose">
+<procedure name="ensenso_grab_rect">
 <interface>
+<oo>
+<par name="RightImage" base_type="iconic" dimension="0"/>
+<par name="LeftImage" base_type="iconic" dimension="0"/>
+</oo>
 <ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
 <par name="NxLibHandle" base_type="ctrl" dimension="0"/>
+<par name="ExposureMS" base_type="ctrl" dimension="0"/>
 <par name="GenParamNames" base_type="ctrl" dimension="0"/>
 <par name="GenParamValues" base_type="ctrl" dimension="0"/>
 </ic>
-<oc>
-<par name="EnsensoPose" base_type="ctrl" dimension="0"/>
-</oc>
 </interface>
 <body>
-<l>workOnline := false</l>
-<l>if(workOnline)</l>
-<c>    *TODO: get camera serial number to build query string</c>
-<c>    </c>
-<c>    *read pose</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/150392/Link/', Link)</l>
-<c>    *read rotation/angle</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/150392/Link/Rotation/Angle', RotationAngle)</l>
-<c>    *read rotation/axis</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/150392/Link/Rotation/Axis', RotationAxis)</l>
-<c>    *read workspace translation</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/150392/Link/Translation', WorkspaceTranslation)</l>
-<l>else</l>
-<l>    read_tuple('S:/Data/Engineering/Research and Development/3D Sensing/Utilities/EnsensoN35 Acquisition Tools/Link.tup',Link)</l>
-<l>endif</l>
-<c></c>
-<l>RotationAxis := [.212,-.225,-.950]</l>
-<l>RotationAngle := 1.62</l>
-<l>WorkspaceTranslation := [44.5, 186.2, 1913.5]</l>
-<l>axis_angle_to_quat(RotationAxis[0],RotationAxis[1],RotationAxis[2],RotationAngle,PoseQuaternion)</l>
-<l>quat_to_hom_mat3d (PoseQuaternion,PoseRotationMatrix)</l>
-<l>hom_mat3d_translate(PoseRotationMatrix,WorkspaceTranslation[0],WorkspaceTranslation[1],WorkspaceTranslation[2],PoseHomMat3D)</l>
-<l>hom_mat3d_to_pose (PoseHomMat3D,CameraPose)</l>
-<c></c>
-<l>pose_invert(CameraPose,CameraPoseInverted)</l>
-<c>*TODO: which pose is the ensenso pose in WCS?  Pick one to output</c>
-<c></c>
-<c></c>
-<c></c>
-<c></c>
 <l>if(|GenParamNames| != |GenParamValues|)</l>
 <l>    throw('Number of gen param names and values are not equal')</l>
 <l>endif</l>
 <c></c>
-<l>Pose := 'world'</l>
-<l>PoseOrder := 'gba'</l>
+<l>IsLightOn := 'false'</l>
+<l>IsProjectorOn := 'false'</l>
 <c></c>
-<l>for i:=0 to |GenParamNames|-1 by 1</l>
-<l>    if(GenParamNames[i] == 'pose')</l>
-<l>        if(GenParamValues[i] == 'world')</l>
-<c>            </c>
+<l>GrabLeft := false</l>
+<l>GrabRight := false</l>
+<c></c>
+<l>for i := 0 to |GenParamNames|-1 by 1</l>
+<l>    if(GenParamNames[i] == 'light_on')</l>
+<l>        if(GenParamValues[i] == 'true')</l>
+<l>            IsLightOn := 'true'</l>
 <l>        endif</l>
 <l>    endif</l>
-<l>    if(GenParamNames[i] == 'pose')</l>
-<l>        if(GenParamValues[i] == 'relative')</l>
-<c>            </c>
+<l>    if(GenParamNames[i] == 'projector_on')</l>
+<l>        if(GenParamValues[i] == 'true')</l>
+<l>            IsProjectorOn := 'true'</l>
 <l>        endif</l>
 <l>    endif</l>
-<l>    if(GenParamNames[i] == 'pose_order')</l>
-<l>        if(GenParamValues[i] == 'abg')</l>
-<l>            PoseOrder := 'abg'</l>
+<l>    if(GenParamNames[i] == 'left')</l>
+<l>        if(GenParamValues[i] == 'true')</l>
+<l>            GrabLeft := true</l>
 <l>        endif</l>
 <l>    endif</l>
-<l>    if(GenParamNames[i] == 'pose_order')</l>
-<l>        if(GenParamValues[i] == 'gba')</l>
-<l>            PoseOrder := 'gba'</l>
+<l>    if(GenParamNames[i] == 'right')</l>
+<l>        if(GenParamValues[i] == 'true')</l>
+<l>            GrabRight := true</l>
 <l>        endif</l>
 <l>    endif</l>
 <l>endfor</l>
 <c></c>
+<c>*get auto grab data state and turn it off temporarily</c>
+<l>get_framegrabber_param(AcqHandle,'auto_grab_data',IsAutoGrabData)</l>
+<l>set_framegrabber_param(AcqHandle,'auto_grab_data','false')</l>
 <c></c>
+<c>*set the exposure for the gray images</c>
+<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/Exposure', ExposureMS)</l>
 <c></c>
+<c>*set the front light state</c>
+<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/FrontLight', 'true')</l>
 <c></c>
+<c>*set the projector pattern state</c>
+<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/Projector', 'false')</l>
 <c></c>
-<l>if(PoseOrder == 'abg')</l>
-<l>    EnsensoPose := CameraPose</l>
-<l>elseif(PoseOrder == 'gba')</l>
-<l>    get_pose_type(CameraPose,OrderOfTransform, OrderOfRotation, ViewOfTransform)</l>
-<l>    convert_pose_type (CameraPose,OrderOfTransform, 'abg', ViewOfTransform, ABGPose)</l>
-<l>    EnsensoPose := ABGPose</l>
+<c>*Grab the L/R Images</c>
+<l>gen_empty_obj(LeftImage)</l>
+<l>gen_empty_obj(RightImage)</l>
+<l>GrabList := []</l>
+<l>if(GrabLeft)</l>
+<l>    tuple_concat(GrabList,'Images/Rectified/Left',GrabList)</l>
+<l>endif</l>
+<l>if(GrabRight)</l>
+<l>    tuple_concat(GrabList,'Images/Rectified/Right',GrabList)</l>
 <l>endif</l>
 <c></c>
+<l>set_framegrabber_param (AcqHandle, 'grab_data_items', GrabList)</l>
+<l>set_framegrabber_param (NxLibHandle,'do_execute','Capture')</l>
+<l>set_framegrabber_param (NxLibHandle, 'do_execute', 'RectifyImages')</l>
+<l>grab_data (EnsensoImages, Region, Contours, AcqHandle, Data)</l>
+<c></c>
+<c>*reset auto grab data</c>
+<l>set_framegrabber_param(AcqHandle,'auto_grab_data',IsAutoGrabData)</l>
+<c></c>
+<c>*Split the L/R Image tuple into individual images (select_obj is NOT a deep copy operation)</c>
+<l>try</l>
+<l>    if(GrabLeft)</l>
+<l>        select_obj(EnsensoImages,LeftImage,1)</l>
+<l>    endif</l>
+<l>catch(ex)</l>
+<l>endtry</l>
+<l>try</l>
+<l>    if(GrabLeft)</l>
+<l>        select_obj(EnsensoImages,RightImage,2)</l>
+<l>    elseif(GrabRight)</l>
+<l>        select_obj(EnsensoImages,RightImage,1)</l>
+<l>    endif</l>
+<l>catch(ex)</l>
+<l>endtry</l>
 <l>return ()</l>
 </body>
-<docu id="ensenso_get_pose">
-<abstract lang="en_US">https://github.com/zserge/jsmn/blob/master/jsmn.c
-
-&lt;a href="https://github.com/zserge/jsmn/blob/master/jsmn.c"&gt;&lt;/a&gt;
-
-&lt;a href="https://github.com/zserge/jsmn/blob/master/jsmn.c"&gt;JSMN Test Link&lt;/a&gt;
-
-</abstract>
-<chapters lang="en_US">
-<item>Ensenso</item>
-</chapters>
-<library lang="en_US">Ensenso</library>
+<docu id="ensenso_grab_rect">
 <parameters>
-<parameter id="EnsensoPose"/>
+<parameter id="AcqHandle"/>
+<parameter id="ExposureMS"/>
 <parameter id="GenParamNames"/>
 <parameter id="GenParamValues"/>
+<parameter id="LeftImage"/>
 <parameter id="NxLibHandle"/>
+<parameter id="RightImage"/>
 </parameters>
 </docu>
 </procedure>
-<procedure name="ensenso_get_settings">
+<procedure name="ensenso_grab_xyz">
 <interface>
+<oo>
+<par name="X" base_type="iconic" dimension="0"/>
+<par name="Y" base_type="iconic" dimension="0"/>
+<par name="Z" base_type="iconic" dimension="0"/>
+<par name="Regions" base_type="iconic" dimension="0"/>
+</oo>
 <ic>
 <par name="AcqHandle" base_type="ctrl" dimension="0"/>
+<par name="ExposureMS" base_type="ctrl" dimension="0"/>
+<par name="GenRegions" base_type="ctrl" dimension="0"/>
 </ic>
-<oc>
-<par name="EnsensoParameters" base_type="ctrl" dimension="0"/>
-<par name="ParameterNames" base_type="ctrl" dimension="0"/>
-<par name="ParameterValues" base_type="ctrl" dimension="0"/>
-</oc>
 </interface>
 <body>
-<c>*read parameter string if you want to write a .json file later</c>
-<l>get_framegrabber_param (AcqHandle, 'Parameters', EnsensoParameters)</l>
-<c></c>
-<c>*read parameters individually, separating their names and values</c>
-<l>get_framegrabber_param (AcqHandle, 'available_param_names', ParameterNames)</l>
-<l>tuple_sort (ParameterNames, ParameterNames)</l>
-<c></c>
-<c></c>
-<c>* query all current parameter values:</c>
-<l>ParameterValues := []</l>
-<l>get_system ('do_low_error', LowErrorFlag)</l>
-<l>if (LowErrorFlag == 'true')</l>
-<l>  set_system ('do_low_error', 'false')</l>
+<l>if(GenRegions == 1)</l>
+<l>    GenRegions := 'true'</l>
 <l>endif</l>
-<l>dev_set_check ('~give_error')</l>
-<l>dev_error_var (HalconError, 1)</l>
-<l>for i := 0 to |ParameterNames| - 1 by 1</l>
-<l>  get_framegrabber_param (AcqHandle, ParameterNames[i], value)</l>
-<l>  tuple_concat(ParameterValues, value, ParameterValues)</l>
-<l>endfor</l>
-<l>dev_set_check ('give_error')</l>
-<l>set_system ('do_low_error', LowErrorFlag)</l>
+<c></c>
+<c>* Set the tree items returned when calling 'grab_data'</c>
+<l>set_framegrabber_param (AcqHandle, 'grab_data_items', ['Images/PointMap'])</l>
+<c></c>
+<c>* Prevent regions from being generated/transmitted   </c>
+<l>set_framegrabber_param (AcqHandle, 'generate_regions', GenRegions)</l>
+<c></c>
+<c></c>
+<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/Exposure', ExposureMS)</l>
+<l>grab_data (ImageXYZ, Regions, Contours, AcqHandle, Data)</l>
+<c></c>
+<c>*Split the result data into individual images (access_channel MAY be a deep copy method)</c>
+<l>access_channel (ImageXYZ, X, 1)   </l>
+<l>access_channel (ImageXYZ, Y, 2) </l>
+<l>access_channel (ImageXYZ, Z, 3)</l>
 <l>return ()</l>
 </body>
-<docu id="ensenso_get_settings">
-<chapters lang="en_US">
-<item>Ensenso</item>
-</chapters>
-<library lang="en_US">Ensenso</library>
-<short lang="en_US">Get settings from the Ensenso camera</short>
+<docu id="ensenso_grab_xyz">
 <parameters>
 <parameter id="AcqHandle"/>
-<parameter id="EnsensoParameters"/>
-<parameter id="ParameterNames"/>
-<parameter id="ParameterValues"/>
-</parameters>
-</docu>
-</procedure>
-<procedure name="ensenso_set_settings">
-<interface>
-<ic>
-<par name="AcqHandle" base_type="ctrl" dimension="0"/>
-<par name="EnsensoParameters" base_type="ctrl" dimension="0"/>
-<par name="ParameterNames" base_type="ctrl" dimension="0"/>
-<par name="ParameterValues" base_type="ctrl" dimension="0"/>
-</ic>
-</interface>
-<body>
-<l>if(|ParameterNames| != |ParameterValues|)</l>
-<l>    throw('Number of param names and values are not equal')</l>
-<l>endif</l>
-<c></c>
-<c>*First apply the ensenso parameters tuple</c>
-<l>if(EnsensoParameters != '')</l>
-<l>    SettingsTuple := ['apply']</l>
-<l>    tuple_concat(SettingsTuple,EnsensoParameters,SettingsTuple)</l>
-<l>    set_framegrabber_param(AcqHandle,'Parameters',SettingsTuple)</l>
-<l>endif</l>
-<c></c>
-<c>*Apply individual parameters</c>
-<l>for i:=0 to |ParameterNames|-1 by 1</l>
-<l>    set_framegrabber_param(AcqHandle,ParameterNames[i], ParameterValues[i])</l>
-<l>endfor</l>
-<c></c>
-<l>return ()</l>
-</body>
-<docu id="ensenso_set_settings">
-<parameters>
-<parameter id="AcqHandle"/>
-<parameter id="EnsensoParameters"/>
-<parameter id="ParameterNames"/>
-<parameter id="ParameterValues"/>
-</parameters>
-</docu>
-</procedure>
-<procedure name="ensenso_read_calibration">
-<interface>
-<ic>
-<par name="FilePath" base_type="ctrl" dimension="0"/>
-</ic>
-<oc>
-<par name="CalParameterNames" base_type="ctrl" dimension="0"/>
-<par name="CalParameterValues" base_type="ctrl" dimension="0"/>
-</oc>
-</interface>
-<body>
-<c>***********************************************************************************************************************</c>
-<c>* ENSENSO READ CALIBRATION</c>
-<c>***********************************************************************************************************************</c>
-<c>* Created: 7/8/16</c>
-<c>* Author: Justin Swick</c>
-<c>* </c>
-<c>* Summary:</c>
-<c>* This reads a calibration file, parses the tree structure, and pulls out each path name / value into two tuples where</c>
-<c>* the indices of each tuple match for a particular setting.  Then it filters the resulting output tuples for calibration</c>
-<c>* elements only</c>
-<c>*</c>
-<c>*</c>
-<c>* Change Log</c>
-<c>* Version      Date       Changes</c>
-<c>* =======      ====       =============================================================================================</c>
-<c>* 0.1          7/8/16     First working version</c>
-<c>*</c>
-<c>*</c>
-<c>*</c>
-<c>***********************************************************************************************************************</c>
-<l>stop()</l>
-<l>ensenso_read_json (FilePath, Names, Values)</l>
-<c></c>
-<l>CalParameterNames := []</l>
-<l>CalParameterValues := []</l>
-<l>for i:=0 to |Names|-1 by 1</l>
-<l>    tuple_regexp_test(Names[i],'Calibration',NumMatches)</l>
-<l>    if(NumMatches == 1)</l>
-<l>        tuple_concat(CalParameterNames, Names[i], CalParameterNames)</l>
-<l>        tuple_concat(CalParameterValues, Values[i], CalParameterValues)</l>
-<l>    endif</l>
-<l>endfor</l>
-<c></c>
-<l>return ()</l>
-</body>
-<docu id="ensenso_read_calibration">
-<parameters>
-<parameter id="CalParameterNames"/>
-<parameter id="CalParameterValues"/>
-<parameter id="FilePath"/>
-</parameters>
-</docu>
-</procedure>
-<procedure name="ensenso_get_calibration">
-<interface>
-<ic>
-<par name="AcqHandle" base_type="ctrl" dimension="0"/>
-</ic>
-<oc>
-<par name="CalParameterNames" base_type="ctrl" dimension="0"/>
-<par name="CalParameterValues" base_type="ctrl" dimension="0"/>
-<par name="CalibrationJSON" base_type="ctrl" dimension="0"/>
-</oc>
-</interface>
-<body>
-<l>workOnline := false</l>
-<l>if(workOnline)</l>
-<c>*read calibration string if you want to write a .json file later</c>
-<l>get_framegrabber_param (AcqHandle, 'Calibration', CalibrationJSON)</l>
-<l>else</l>
-<l>    read_tuple('S:/Data/Engineering/Research and Development/3D Sensing/Utilities/EnsensoN35 Acquisition Tools/CalibrationJSON.tup',CalibrationJSON)</l>
-<l>endif</l>
-<c></c>
-<c></c>
-<c>*NOTE THIS CALIBRATION STRING IS NOT THE SAME AS THE CALIB.JSON FILE FROM NXVIEW, WHICH CONTAINS OTHER INFO</c>
-<c></c>
-<l>return ()</l>
-</body>
-<docu id="ensenso_get_calibration">
-<chapters lang="en_US">
-<item>Ensenso</item>
-</chapters>
-<library lang="en_US">Ensenso</library>
-<short lang="en_US">Get a calibration from the Ensenso camera</short>
-<parameters>
-<parameter id="AcqHandle"/>
-<parameter id="CalParameterNames"/>
-<parameter id="CalParameterValues"/>
-<parameter id="CalibrationJSON"/>
-</parameters>
-</docu>
-</procedure>
-<procedure name="ensenso_set_calibration">
-<interface>
-<ic>
-<par name="AcqHandle" base_type="ctrl" dimension="0"/>
-<par name="CalibrationParameters" base_type="ctrl" dimension="0"/>
-<par name="CalParameterNames" base_type="ctrl" dimension="0"/>
-<par name="CalParameterValues" base_type="ctrl" dimension="0"/>
-</ic>
-</interface>
-<body>
-<c>*First apply the ensenso settings tuple</c>
-<l>if(CalibrationParameters != '')</l>
-<l>    CalTuple := ['apply']</l>
-<l>    tuple_concat(CalTuple,CalibrationParameters,CalTuple)</l>
-<l>    set_framegrabber_param(AcqHandle,'Parameters',CalTuple)</l>
-<l>endif</l>
-<c></c>
-<c>*Apply individual parameters</c>
-<l>for i:=0 to |CalParameterNames|-1 by 1</l>
-<l>    set_framegrabber_param(AcqHandle,CalParameterNames[i], CalParameterValues[i])</l>
-<l>endfor</l>
-<l>return ()</l>
-</body>
-<docu id="ensenso_set_calibration">
-<abstract lang="en_US">Set the calibration for an Ensenso using either a calibration string retrieved from a device, loaded from a file, or individual calibration parameters and values.  Note: calibration parameters and values are applied AFTER the calibration string.</abstract>
-<chapters lang="en_US">
-<item>Ensenso</item>
-</chapters>
-<library lang="en_US">Ensenso</library>
-<parameters>
-<parameter id="AcqHandle"/>
-<parameter id="CalParameterNames"/>
-<parameter id="CalParameterValues"/>
-<parameter id="CalibrationParameters"/>
-</parameters>
-</docu>
-</procedure>
-<procedure name="ensenso_set_pose">
-<interface>
-<ic>
-<par name="NxLibHandle" base_type="ctrl" dimension="0"/>
-<par name="PoseInWorldCoordinates" base_type="ctrl" dimension="0"/>
-</ic>
-</interface>
-<body>
-<c>*read rotation/angle</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/150392/Link/Rotation/Angle', RotationAngle)</l>
-<c>    *read rotation/axis</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/150392/Link/Rotation/Axis', RotationAxis)</l>
-<c>    *read workspace translation</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/150392/Link/Translation', WorkspaceTranslation)</l>
-<c>    </c>
-<c>    </c>
-<l>set_framegrabber_param (NxLibHandle, 'Parameters', CalTuple)</l>
-<c>    </c>
-<c>    </c>
-<c>    </c>
-<c>    </c>
-<l>RotationAxis := [.212,-.225,-.950]</l>
-<l>RotationAngle := 1.62</l>
-<l>WorkspaceTranslation := [44.5, 186.2, 1913.5]</l>
-<l>axis_angle_to_quat(RotationAxis[0],RotationAxis[1],RotationAxis[2],RotationAngle,PoseQuaternion)</l>
-<l>quat_to_hom_mat3d (PoseQuaternion,PoseRotationMatrix)</l>
-<l>hom_mat3d_translate(PoseRotationMatrix,WorkspaceTranslation[0],WorkspaceTranslation[1],WorkspaceTranslation[2],PoseHomMat3D)</l>
-<l>hom_mat3d_to_pose (PoseHomMat3D,CameraPose)</l>
-<c></c>
-<l>PoseInWorldCoordinates := CameraPose</l>
-<c></c>
-<c>*get XYZ translation from ensenso pose</c>
-<l>WorkspaceTranslation[0] := PoseInWorldCoordinates[0]</l>
-<l>WorkspaceTranslation[1] := PoseInWorldCoordinates[1]</l>
-<l>WorkspaceTranslation[2] := PoseInWorldCoordinates[2]</l>
-<c></c>
-<c>*convert ensenso pose to homogeneous matrix</c>
-<l>pose_to_hom_mat3d(PoseInWorldCoordinates,PoseHomMat3D)</l>
-<c></c>
-<c>*translate the pose to the origin so that rotation axes and angles can be obtained</c>
-<l>hom_mat3d_translate(PoseHomMat3D,-WorkspaceTranslation[0],-WorkspaceTranslation[1],-WorkspaceTranslation[2],PoseRotationMatrix)</l>
-<c></c>
-<c>*calculate the quaternion representation of the rotation matrix</c>
-<c>*TODO: test in singularity and the example poses from this website</c>
-<c>* http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/examples/index.htm</c>
-<l>ensenso_hom_mat3d_to_quat (PoseRotationMatrix, Quaternion)</l>
-<c></c>
-<l>ensenso_quat_to_axis_angle (Quaternion, Angle2, RotationAxis2)</l>
-<c></c>
-<c></c>
-<c></c>
-<c></c>
-<c></c>
-<c></c>
-<c></c>
-<c></c>
-<c></c>
-<c></c>
-<c>*TODO: get serial number from handle and build path string automatically</c>
-<l>set_framegrabber_param(NxLibHandle,'Cameras/BySerialNo/150392/Link/Translation', WorkspaceTranslation)</l>
-<l>return ()</l>
-</body>
-<docu id="ensenso_set_pose">
-<abstract lang="en_US">Set the Ensenso's pose relative to the world coordinate system</abstract>
-<chapters lang="en_US">
-<item>Ensenso</item>
-</chapters>
-<library lang="en_US">Ensenso</library>
-<parameters>
-<parameter id="NxLibHandle"/>
-<parameter id="PoseInWorldCoordinates"/>
+<parameter id="ExposureMS"/>
+<parameter id="GenRegions"/>
+<parameter id="Regions"/>
+<parameter id="X"/>
+<parameter id="Y"/>
+<parameter id="Z"/>
 </parameters>
 </docu>
 </procedure>
@@ -1070,6 +694,115 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 </parameters>
 </docu>
 </procedure>
+<procedure name="ensenso_initialize">
+<interface>
+<oo>
+<par name="TestImage" base_type="iconic" dimension="0"/>
+</oo>
+<ic>
+<par name="SerialNumber" base_type="ctrl" dimension="0"/>
+<par name="Exposure" base_type="ctrl" dimension="0"/>
+<par name="GrabRaw" base_type="ctrl" dimension="0"/>
+<par name="GrabRect" base_type="ctrl" dimension="0"/>
+<par name="GrabXYZ" base_type="ctrl" dimension="0"/>
+<par name="GrabRegions" base_type="ctrl" dimension="0"/>
+<par name="GenParamNames" base_type="ctrl" dimension="0"/>
+<par name="GenParamValues" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+<par name="NxLibHandle" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<l>open_framegrabber ('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', -1, 'Rectified', -1, 'default', 'stereo', '', 0, -1, AcqHandle)</l>
+<c></c>
+<l>open_framegrabber ('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', -1, 'Rectified', -1, 'default', 'Item', '', 0, -1, NxLibHandle)</l>
+<c></c>
+<c></c>
+<c>*Open a tcp port, so the internal tree can be browsed with NxTreeView:</c>
+<l>set_framegrabber_param(NxLibHandle, 'do_open_tcp_port', 24000)</l>
+<c></c>
+<l>set_framegrabber_param(AcqHandle,'auto_grab_data','true')</l>
+<l>return ()</l>
+<c></c>
+<c>*without 'auto_grab_data' following commands would be needed for the same result:</c>
+<l>*set_framegrabber_param (AcqHandle, 'auto_grab_data', 'false')</l>
+<l>*open_framegrabber('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', 0, 'Raw', -1, 'false', 'Item', '/', 0, 0, NxLibHandle)</l>
+<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'Capture')</l>
+<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputeDisparityMap')</l>
+<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputePointMap')</l>
+<l>*grab_data (Image, Region, Contours, AcqHandle, Data)</l>
+</body>
+<docu id="ensenso_initialize">
+<abstract lang="en_US">This procedure simplifies connection / initialization of the Ensenso N-series stereo 3d sensor.</abstract>
+<alternatives>
+<item>open_framegrabber</item>
+</alternatives>
+<keywords lang="en_US">
+<item>ensenso</item>
+</keywords>
+<short lang="en_US">Initialize an Ensenso N-series stereo 3d sensor</short>
+<parameters>
+<parameter id="AcqHandle">
+<description lang="en_US">Handle of the selected Ensenso sensor</description>
+</parameter>
+<parameter id="Exposure">
+<default_value>0</default_value>
+<description lang="en_US">Exposure in milliseconds, choose 0 for auto</description>
+</parameter>
+<parameter id="GenParamNames">
+<default_value>[]</default_value>
+<values>
+<item>'camera_type'</item>
+<item>'color_space'</item>
+<item>'auto_grab_data'</item>
+</values>
+</parameter>
+<parameter id="GenParamValues">
+<default_value>[]</default_value>
+<values>
+<item>'Stereo'</item>
+<item>'Monocular'</item>
+<item>'Raw'</item>
+<item>'Rectified'</item>
+<item>'false'</item>
+<item>'true'</item>
+</values>
+</parameter>
+<parameter id="GrabRaw">
+<default_value>'false'</default_value>
+<description lang="en_US">Grab the raw camera image (not rectified, distorted)</description>
+<value_max>0.00</value_max>
+<value_min>0.00</value_min>
+</parameter>
+<parameter id="GrabRect">
+<default_value>'true'</default_value>
+<description lang="en_US">Grab the rectified camera images</description>
+<value_max>0.00</value_max>
+<value_min>0.00</value_min>
+</parameter>
+<parameter id="GrabRegions">
+<default_value>'false'</default_value>
+<description lang="en_US">Grab the valid regions</description>
+</parameter>
+<parameter id="GrabXYZ">
+<default_value>'true'</default_value>
+<description lang="en_US">Grab the XYZ images</description>
+</parameter>
+<parameter id="NxLibHandle"/>
+<parameter id="SerialNumber">
+<default_value>0</default_value>
+<description lang="en_US">Serial number of the camera.  Get with info_framegrabber('Ensenso-NxLib','info_boards',Information,Values).  Use 0 if there is only one connected to the PC.</description>
+</parameter>
+<parameter id="TestImage"/>
+</parameters>
+</docu>
+</procedure>
 <procedure name="ensenso_quat_sign">
 <interface>
 <ic>
@@ -1188,6 +921,622 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <parameter id="Angle"/>
 <parameter id="Quaternion"/>
 <parameter id="RotationAxis"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ensenso_read_calibration">
+<interface>
+<ic>
+<par name="FilePath" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="CalParameterNames" base_type="ctrl" dimension="0"/>
+<par name="CalParameterValues" base_type="ctrl" dimension="0"/>
+<par name="CalibrationJSON" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c>***********************************************************************************************************************</c>
+<c>* ENSENSO READ CALIBRATION</c>
+<c>***********************************************************************************************************************</c>
+<c>* Created: 7/8/16</c>
+<c>* Author: Justin Swick</c>
+<c>* </c>
+<c>* Summary:</c>
+<c>* This reads a calibration file, parses the tree structure, and pulls out each path name / value into two tuples where</c>
+<c>* the indices of each tuple match for a particular setting.  Then it filters the resulting output tuples for calibration</c>
+<c>* elements only</c>
+<c>*</c>
+<c>*</c>
+<c>* Change Log</c>
+<c>* Version      Date       Changes</c>
+<c>* =======      ====       =============================================================================================</c>
+<c>* 0.1          7/8/16     First working version</c>
+<c>*</c>
+<c>*</c>
+<c>*</c>
+<c>***********************************************************************************************************************</c>
+<l>*stop()</l>
+<c>*ensenso_read_json (FilePath, Names, Values)</c>
+<c></c>
+<l>open_file(FilePath,'input',calibHandle)</l>
+<l>CalibrationJSON := ''</l>
+<l>isEOF := 0</l>
+<l>while(isEOF != 1)</l>
+<l>    fread_line(calibHandle,Line,isEOF)</l>
+<l>    CalibrationJSON := CalibrationJSON + Line</l>
+<l>endwhile</l>
+<c></c>
+<l>close_file(calibHandle)</l>
+<c></c>
+<l>* CalParameterNames := []</l>
+<l>* CalParameterValues := []</l>
+<l>* for i:=0 to |Names|-1 by 1</l>
+<l>*     tuple_regexp_test(Names[i],'Calibration',NumMatches)</l>
+<l>*     if(NumMatches == 1)</l>
+<l>*         tuple_concat(CalParameterNames, Names[i], CalParameterNames)</l>
+<l>*         tuple_concat(CalParameterValues, Values[i], CalParameterValues)</l>
+<l>*     endif</l>
+<l>* endfor</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="ensenso_read_calibration">
+<parameters>
+<parameter id="CalParameterNames"/>
+<parameter id="CalParameterValues"/>
+<parameter id="CalibrationJSON"/>
+<parameter id="FilePath"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ensenso_read_settings">
+<interface>
+<ic>
+<par name="FilePath" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="ParameterNames" base_type="ctrl" dimension="0"/>
+<par name="ParameterValues" base_type="ctrl" dimension="0"/>
+<par name="ParametersJSON" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c>***********************************************************************************************************************</c>
+<c>* ENSENSO READ SETTINGS</c>
+<c>***********************************************************************************************************************</c>
+<c>* Created: 2/8/17</c>
+<c>* Author: Justin Swick</c>
+<c>* </c>
+<c>* Summary:</c>
+<c>* This reads a settings / parameters file, parses the tree structure, and pulls out each path name / value into two tuples where</c>
+<c>* the indices of each tuple match for a particular setting.  Then it filters the resulting output tuples for calibration</c>
+<c>* elements only</c>
+<c>*</c>
+<c>*</c>
+<c>* Change Log</c>
+<c>* Version      Date       Changes</c>
+<c>* =======      ====       =============================================================================================</c>
+<c>* 0.1          2/8/17     First working version</c>
+<c>*</c>
+<c>*</c>
+<c>*</c>
+<c>***********************************************************************************************************************</c>
+<l>*stop()</l>
+<c></c>
+<l>open_file(FilePath,'input',settingsFileHandle)</l>
+<l>ParametersJSON := ''</l>
+<l>isEOF := 0</l>
+<l>while(isEOF != 1)</l>
+<l>    fread_line(settingsFileHandle,Line,isEOF)</l>
+<l>    ParametersJSON := ParametersJSON + Line</l>
+<l>endwhile</l>
+<c></c>
+<l>close_file(settingsFileHandle)</l>
+<c></c>
+<l>* CalParameterNames := []</l>
+<l>* CalParameterValues := []</l>
+<l>* for i:=0 to |Names|-1 by 1</l>
+<l>*     tuple_regexp_test(Names[i],'Calibration',NumMatches)</l>
+<l>*     if(NumMatches == 1)</l>
+<l>*         tuple_concat(CalParameterNames, Names[i], CalParameterNames)</l>
+<l>*         tuple_concat(CalParameterValues, Values[i], CalParameterValues)</l>
+<l>*     endif</l>
+<l>* endfor</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="ensenso_read_settings">
+<parameters>
+<parameter id="FilePath"/>
+<parameter id="ParameterNames"/>
+<parameter id="ParameterValues"/>
+<parameter id="ParametersJSON"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ensenso_set_calibration">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+<par name="CalibrationParameters" base_type="ctrl" dimension="0"/>
+<par name="CalParameterNames" base_type="ctrl" dimension="0"/>
+<par name="CalParameterValues" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<c>*First apply the ensenso settings tuple</c>
+<l>if(CalibrationParameters != '')</l>
+<l>    set_framegrabber_param(AcqHandle,'',['apply', CalibrationParameters])</l>
+<l>endif</l>
+<c></c>
+<c>*Apply individual parameters</c>
+<l>for i:=0 to |CalParameterNames|-1 by 1</l>
+<l>    set_framegrabber_param(AcqHandle,CalParameterNames[i], CalParameterValues[i])</l>
+<l>endfor</l>
+<l>return ()</l>
+</body>
+<docu id="ensenso_set_calibration">
+<abstract lang="en_US">Set the calibration for an Ensenso using either a calibration string retrieved from a device, loaded from a file, or individual calibration parameters and values.  Note: calibration parameters and values are applied AFTER the calibration string.</abstract>
+<chapters lang="en_US">
+<item>Ensenso</item>
+</chapters>
+<library lang="en_US">Ensenso</library>
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="CalParameterNames"/>
+<parameter id="CalParameterValues"/>
+<parameter id="CalibrationParameters"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ensenso_set_pose">
+<interface>
+<ic>
+<par name="NxLibHandle" base_type="ctrl" dimension="0"/>
+<par name="PoseInWorldCoordinates" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<l>info_framegrabber ('Ensenso-NxLib', 'device', Information, Serial)</l>
+<c></c>
+<c>*read rotation/angle</c>
+<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Rotation/Angle', RotationAngle)</l>
+<c>    *read rotation/axis</c>
+<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Rotation/Axis', RotationAxis)</l>
+<c>    *read workspace translation</c>
+<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Translation', WorkspaceTranslation)</l>
+<c></c>
+<c>    </c>
+<l>RotationAxis := [.212,-.225,-.950]</l>
+<l>RotationAngle := 1.62</l>
+<l>WorkspaceTranslation := [44.5, 186.2, 1913.5]</l>
+<l>axis_angle_to_quat(RotationAxis[0],RotationAxis[1],RotationAxis[2],RotationAngle,PoseQuaternion)</l>
+<l>quat_to_hom_mat3d (PoseQuaternion,PoseRotationMatrix)</l>
+<l>hom_mat3d_translate(PoseRotationMatrix,WorkspaceTranslation[0],WorkspaceTranslation[1],WorkspaceTranslation[2],PoseHomMat3D)</l>
+<l>hom_mat3d_to_pose (PoseHomMat3D,CameraPose)</l>
+<c></c>
+<l>PoseInWorldCoordinates := CameraPose</l>
+<c></c>
+<c>*get XYZ translation from ensenso pose</c>
+<l>WorkspaceTranslation[0] := PoseInWorldCoordinates[0]</l>
+<l>WorkspaceTranslation[1] := PoseInWorldCoordinates[1]</l>
+<l>WorkspaceTranslation[2] := PoseInWorldCoordinates[2]</l>
+<c></c>
+<c>*convert ensenso pose to homogeneous matrix</c>
+<l>pose_to_hom_mat3d(PoseInWorldCoordinates,PoseHomMat3D)</l>
+<c></c>
+<c>*translate the pose to the origin so that rotation axes and angles can be obtained</c>
+<l>hom_mat3d_translate(PoseHomMat3D,-WorkspaceTranslation[0],-WorkspaceTranslation[1],-WorkspaceTranslation[2],PoseRotationMatrix)</l>
+<c></c>
+<c>*calculate the quaternion representation of the rotation matrix</c>
+<c>*TODO: test in singularity and the example poses from this website</c>
+<c>* http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/examples/index.htm</c>
+<l>ensenso_hom_mat3d_to_quat (PoseRotationMatrix, Quaternion)</l>
+<c></c>
+<l>ensenso_quat_to_axis_angle (Quaternion, Angle2, RotationAxis2)</l>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c>*TODO: get serial number from handle and build path string automatically</c>
+<l>set_framegrabber_param(NxLibHandle,'Cameras/BySerialNo/'+Serial+'/Link/Translation', WorkspaceTranslation)</l>
+<l>return ()</l>
+</body>
+<docu id="ensenso_set_pose">
+<abstract lang="en_US">Set the Ensenso's pose relative to the world coordinate system</abstract>
+<chapters lang="en_US">
+<item>Ensenso</item>
+</chapters>
+<library lang="en_US">Ensenso</library>
+<parameters>
+<parameter id="NxLibHandle"/>
+<parameter id="PoseInWorldCoordinates"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ensenso_set_settings">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+<par name="EnsensoParameters" base_type="ctrl" dimension="0"/>
+<par name="ParameterNames" base_type="ctrl" dimension="0"/>
+<par name="ParameterValues" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<l>if(|ParameterNames| != |ParameterValues|)</l>
+<l>    throw('Number of param names and values are not equal')</l>
+<l>endif</l>
+<c></c>
+<c>*First apply the ensenso parameters tuple</c>
+<l>if(EnsensoParameters != '')</l>
+<l>    set_framegrabber_param(AcqHandle,'Parameters',['apply',EnsensoParameters])</l>
+<l>endif</l>
+<c></c>
+<c>*Apply individual parameters</c>
+<l>for i:=0 to |ParameterNames|-1 by 1</l>
+<l>    set_framegrabber_param(AcqHandle,ParameterNames[i], ParameterValues[i])</l>
+<l>endfor</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="ensenso_set_settings">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="EnsensoParameters"/>
+<parameter id="ParameterNames"/>
+<parameter id="ParameterValues"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ensenso_try_close">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+<par name="NxLibHandle" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<c>*ensenso has a handle for the cameras and the NxLib tree root (NxLibHandle).  Both must be closed to release the device.</c>
+<l>try</l>
+<l>close_framegrabber (AcqHandle)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
+<l>try</l>
+<l>close_framegrabber (NxLibHandle)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="ensenso_try_close">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="NxLibHandle"/>
+</parameters>
+</docu>
+</procedure>
+<procedure name="jsonToTuple">
+<interface>
+<ic>
+<par name="JsonString" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="MatrixID" base_type="ctrl" dimension="0"/>
+<par name="Values" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>tuple_type (JsonString, Type)</l>
+<l>if (Type == H_TYPE_STRING)</l>
+<c>    * Es handelt sich um den Datentyp String</c>
+<c>    * THIS IS THE STRING DATATYPE</c>
+<l>    tuple_strstr (JsonString, '[[', Position)</l>
+<l>    if (Position != -1)</l>
+<c>        * Es handelt sich um eine Matrix</c>
+<c>        * IT IS A TUPLE</c>
+<l>        tuple_strlen (JsonString, Length)</l>
+<l>        tuple_substr (JsonString, 1, Length-2, JsonString)</l>
+<l>    endif</l>
+<c>    * </c>
+<l>    AllSubstrings := []</l>
+<l>    while (true)</l>
+<c>        * Zerlege die Matrix in ihre Eintraege</c>
+<c>        * DISASSEMBLE THE TUPLE INTO ITS ELEMENTS</c>
+<l>        tuple_strstr (JsonString, '],[', Position)</l>
+<l>        tuple_strlen (JsonString, Length)</l>
+<l>        if (Position != -1)</l>
+<l>            tuple_substr (JsonString, 0, Position, Substring)</l>
+<l>            AllSubstrings := [AllSubstrings, Substring]</l>
+<l>            tuple_substr (JsonString, Position+2, Length-1, JsonString)</l>
+<l>        else</l>
+<l>            AllSubstrings := [AllSubstrings, JsonString]</l>
+<l>            JsonString := AllSubstrings</l>
+<l>            break</l>
+<l>        endif</l>
+<l>    endwhile</l>
+<c>    * </c>
+<l>    Dimension := |JsonString|</l>
+<l>    Values := []</l>
+<l>    for i := 0 to Dimension-1 by 1</l>
+<l>        StringTmp := JsonString[i]</l>
+<l>        tuple_strlen (StringTmp, Length)</l>
+<l>        tuple_substr (StringTmp, 1, Length-2, StringTmpStr)</l>
+<l>        tuple_split (StringTmpStr, ',', Substrings)</l>
+<l>        for j := 0 to |Substrings|-1 by 1</l>
+<l>            tuple_number (Substrings[j], Number)</l>
+<l>            Values := [Values, Number]</l>
+<l>        endfor</l>
+<l>    endfor</l>
+<c>    * </c>
+<l>    if (Dimension)</l>
+<l>        NumEntries := |Values| / Dimension</l>
+<l>        create_matrix (Dimension, NumEntries, Values, MatrixID)</l>
+<l>        transpose_matrix_mod (MatrixID)</l>
+<l>    endif</l>
+<c>    * </c>
+<l>elseif (Type == H_TYPE_REAL)</l>
+<c>    * Es handelt sich um einen Real-Eintrag</c>
+<c>    * THIS ENTRY IS A REAL DATA TYPE</c>
+<l>    Values := JsonString</l>
+<l>    Dimension := 1</l>
+<l>    NumEntries := |Values| / Dimension</l>
+<l>    create_matrix (Dimension, NumEntries, Values, MatrixID)</l>
+<l>    transpose_matrix_mod (MatrixID)</l>
+<c>    * </c>
+<l>else</l>
+<c>    * Fehlerfall. Das war so nicht vorgesehen</c>
+<c>    * ERROR DETECTED</c>
+<l>    Result := 0</l>
+<l>    Result := Result / Result</l>
+<c>    * </c>
+<l>endif</l>
+<c>* </c>
+<l>return ()</l>
+</body>
+<docu id="jsonToTuple">
+<short lang="de_DE">Function to extract a matrix/array from a json string</short>
+<parameters>
+<parameter id="JsonString">
+<default_type>string</default_type>
+<description lang="de_DE">Json string containing a matrix/array</description>
+<sem_type>string</sem_type>
+<type_list>
+<item>string</item>
+</type_list>
+</parameter>
+<parameter id="MatrixID">
+<default_type>integer</default_type>
+<description lang="de_DE">Halcon matrix</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<sem_type>matrix</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+<parameter id="Values">
+<default_type>real</default_type>
+<description lang="de_DE">Tuple containing all values from the json string</description>
+<multivalue>optional</multivalue>
+<sem_type>real</sem_type>
+<type_list>
+<item>integer</item>
+<item>real</item>
+</type_list>
+</parameter>
+</parameters>
+</docu>
+</procedure>
+<procedure name="nxLibGetPose">
+<interface>
+<ic>
+<par name="Handle" base_type="ctrl" dimension="0"/>
+<par name="ItemPath" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="Pose" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c>*Read rotation data</c>
+<l>get_framegrabber_param (Handle, ItemPath + '/Rotation/Angle', angle)</l>
+<l>get_framegrabber_param (Handle, ItemPath + '/Rotation/Axis/\\0', axisX)</l>
+<l>get_framegrabber_param (Handle, ItemPath + '/Rotation/Axis/\\1', axisY)</l>
+<l>get_framegrabber_param (Handle, ItemPath + '/Rotation/Axis/\\2', axisZ)</l>
+<c></c>
+<c>*Read translation data</c>
+<l>get_framegrabber_param (Handle, ItemPath + '/Translation/\\0', transX)</l>
+<l>get_framegrabber_param (Handle, ItemPath + '/Translation/\\1', transY)</l>
+<l>get_framegrabber_param (Handle, ItemPath + '/Translation/\\2', transZ)</l>
+<c></c>
+<c>*Make Halcon pose</c>
+<l>axis_angle_to_quat(axisX,axisY,axisZ,angle,q)</l>
+<l>quat_to_pose(q, p)</l>
+<l>p[0] := transX</l>
+<l>p[1] := transY</l>
+<l>p[2] := transZ</l>
+<l>Pose := p</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="nxLibGetPose">
+<short lang="de_DE">Reads a given transformation node and converts the axis angle representation into a Halcon pose</short>
+<parameters>
+<parameter id="Handle">
+<default_type>integer</default_type>
+<description lang="de_DE">Framegrabber handle</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<sem_type>framegrabber</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+<parameter id="ItemPath">
+<default_type>string</default_type>
+<description lang="de_DE">Relative path to transformation item</description>
+<multivalue>false</multivalue>
+<sem_type>string</sem_type>
+<type_list>
+<item>string</item>
+</type_list>
+</parameter>
+<parameter id="Pose">
+<default_type>real</default_type>
+<description lang="de_DE">Halcon pose</description>
+<multivalue>true</multivalue>
+<sem_type>pose</sem_type>
+<type_list>
+<item>integer</item>
+<item>real</item>
+</type_list>
+</parameter>
+</parameters>
+</docu>
+</procedure>
+<procedure name="nxLibGetRectifiedCameraSetup">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="CameraSetupModelID" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c>* Returns a CameraSetupModel for the given NxLib camera handle. </c>
+<c>* Note that this CameraSetupModel can only be used on rectified images.</c>
+<c></c>
+<l>F := 0.008</l>
+<c></c>
+<l>get_framegrabber_param(AcqHandle, 'Sensor/Size/\\0', Width)</l>
+<l>get_framegrabber_param(AcqHandle, 'Sensor/Size/\\1', Height)</l>
+<c></c>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Dynamic/Stereo/Left/Camera/\\0/\\0', Fx)</l>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Dynamic/Stereo/Left/Camera/\\1/\\1', Fy)</l>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Dynamic/Stereo/Left/Camera/\\2/\\0', Cx)</l>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Dynamic/Stereo/Left/Camera/\\2/\\1', Cy)</l>
+<c></c>
+<l>CamParamL := [F, 0, 0, 0, 0, 0, F/Fx, F/Fy, Cx, Cy, Width, Height]</l>
+<c></c>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Dynamic/Stereo/Right/Camera/\\0/\\0', Fx)</l>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Dynamic/Stereo/Right/Camera/\\1/\\1', Fy)</l>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Dynamic/Stereo/Right/Camera/\\2/\\0', Cx)</l>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Dynamic/Stereo/Right/Camera/\\2/\\1', Cy)</l>
+<c></c>
+<l>CamParamR := [F, 0, 0, 0, 0, 0, F/Fx, F/Fy, Cx, Cy, Width, Height]</l>
+<c></c>
+<l>get_framegrabber_param(AcqHandle, 'Calibration/Stereo/Baseline', Baseline)</l>
+<c></c>
+<l>PoseL := [0, 0, 0, 0, 0, 0, 0]</l>
+<l>PoseR := [Baseline * 0.001, 0, 0, 0, 0, 0, 0]</l>
+<c></c>
+<l>create_camera_setup_model (2, CameraSetupModelID)</l>
+<c></c>
+<l>set_camera_setup_cam_param (CameraSetupModelID, 0, 'area_scan_polynomial', CamParamL, PoseL)</l>
+<l>set_camera_setup_cam_param (CameraSetupModelID, 1, 'area_scan_polynomial', CamParamR, PoseR)</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="nxLibGetRectifiedCameraSetup">
+<short lang="de_DE">Returns a CameraSetupModel for the given NxLib camera handle. Note that this CameraSetupModel can only be used on the rectified images.</short>
+<parameters>
+<parameter id="AcqHandle">
+<default_type>integer</default_type>
+<description lang="de_DE">Framegrabber handle</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<sem_type>framegrabber</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+<parameter id="CameraSetupModelID">
+<default_type>integer</default_type>
+<description lang="de_DE">Camera setup model</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<sem_type>camera_setup_model</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+</parameters>
+</docu>
+</procedure>
+<procedure name="nxLibSetPose">
+<interface>
+<ic>
+<par name="Handle" base_type="ctrl" dimension="0"/>
+<par name="ItemPath" base_type="ctrl" dimension="0"/>
+<par name="Pose" base_type="ctrl" dimension="0"/>
+</ic>
+</interface>
+<body>
+<c>*Convert Halcon pose into axis angle representation</c>
+<c>*Unfortunately pose_to_quat doesn't handle 'abg' poses correctly, so we need to convert to 'gba' first</c>
+<l>convert_pose_type(Pose, 'Rp+T', 'gba', 'point', Pose2)</l>
+<l>pose_to_quat(Pose2, q)</l>
+<l>angle := 2*acos(q[0])</l>
+<l>axis  := q[1:3]</l>
+<l>axisNorm := sqrt(sum(axis*axis))</l>
+<l>if (axisNorm &gt; 0)</l>
+<l>    axis := axis/axisNorm</l>
+<l>else</l>
+<l>    axis := [1, 0, 0]</l>
+<l>endif</l>
+<l>out := '{'+\
+         '"Rotation":{'+\
+             '"Axis":['+axis[0]+','+axis[1]+','+axis[2]+'],'+\
+             '"Angle":'+angle+'},'+\
+         '"Translation":['+Pose2[0]+','+Pose2[1]+','+Pose2[2]+']'+\
+       '}'</l>
+<c>*Write rotation and translation data in a block!</c>
+<c>*This is important to prevent renormalization of the axis while writing</c>
+<l>set_framegrabber_param (Handle, ItemPath, ['apply', out])</l>
+<c></c>
+<l>return ()</l>
+</body>
+<docu id="nxLibSetPose">
+<short lang="de_DE">Converts a Halcon pose into axis angle representation and writes it into the given transformation node</short>
+<parameters>
+<parameter id="Handle">
+<default_type>integer</default_type>
+<description lang="de_DE">Framegrabber handle</description>
+<mixed_type>false</mixed_type>
+<multivalue>false</multivalue>
+<sem_type>framegrabber</sem_type>
+<type_list>
+<item>integer</item>
+</type_list>
+</parameter>
+<parameter id="ItemPath">
+<default_type>string</default_type>
+<description lang="de_DE">Relative path to transformation item</description>
+<multivalue>false</multivalue>
+<sem_type>string</sem_type>
+<type_list>
+<item>string</item>
+</type_list>
+</parameter>
+<parameter id="Pose">
+<default_type>real</default_type>
+<description lang="de_DE">Halcon pose</description>
+<multivalue>true</multivalue>
+<sem_type>pose</sem_type>
+<type_list>
+<item>integer</item>
+<item>real</item>
+</type_list>
+</parameter>
 </parameters>
 </docu>
 </procedure>

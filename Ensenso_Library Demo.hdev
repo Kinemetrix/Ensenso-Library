@@ -61,7 +61,7 @@
 <c>*general purpose grab procedure, returns nothing by default, specify the data you want with gen param names and values</c>
 <c>*TODO: implement FLEXVIEW setting</c>
 <l>GenParamNames := ['xyz',  'left_rect', 'right_rect', 'disparity', 'regions', 'light_on', 'flexview']</l>
-<l>GenParamValues :=['true', 'true',      'true',       'false',     'false',   'true',    3]</l>
+<l>GenParamValues :=['true', 'true',      'true',       'false',     'false',   'true',    4]</l>
 <l>ensenso_grab (Images, Regions, AcqHandle, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder)</l>
 <l>select_obj(Images,X,1)</l>
 <l>select_obj(Images,Y,2)</l>

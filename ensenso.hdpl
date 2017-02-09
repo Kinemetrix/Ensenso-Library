@@ -1101,52 +1101,58 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <l>info_framegrabber ('Ensenso-NxLib', 'device', Information, Serial)</l>
 <c></c>
 <c>*read rotation/angle</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Rotation/Angle', RotationAngle)</l>
+<l>*     get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Rotation/Angle', RotationAngle)</l>
 <c>    *read rotation/axis</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Rotation/Axis', RotationAxis)</l>
+<l>*     get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Rotation/Axis', RotationAxis)</l>
 <c>    *read workspace translation</c>
-<l>    get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Translation', WorkspaceTranslation)</l>
-<c></c>
+<l>*     get_framegrabber_param (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/Translation', WorkspaceTranslation)</l>
 <c>    </c>
-<l>RotationAxis := [.212,-.225,-.950]</l>
-<l>RotationAngle := 1.62</l>
-<l>WorkspaceTranslation := [44.5, 186.2, 1913.5]</l>
-<l>axis_angle_to_quat(RotationAxis[0],RotationAxis[1],RotationAxis[2],RotationAngle,PoseQuaternion)</l>
-<l>quat_to_hom_mat3d (PoseQuaternion,PoseRotationMatrix)</l>
-<l>hom_mat3d_translate(PoseRotationMatrix,WorkspaceTranslation[0],WorkspaceTranslation[1],WorkspaceTranslation[2],PoseHomMat3D)</l>
-<l>hom_mat3d_to_pose (PoseHomMat3D,CameraPose)</l>
+<l>*     tuple_regexp_replace(RotationAxis,['\\[','replace_all'],'',Result1)</l>
+<l>*     tuple_regexp_replace(Result1,['\\]','replace_all'],'',Result2)</l>
+<l>*     tuple_split(Result2,',',ResultStr)</l>
+<l>*     tuple_number(ResultStr,RotationAxis)</l>
+<c>    </c>
+<l>*     tuple_regexp_replace(WorkspaceTranslation,['\\[','replace_all'],'',Result1)</l>
+<l>*     tuple_regexp_replace(Result1,['\\]','replace_all'],'',Result2)</l>
+<l>*     tuple_split(Result2,',',ResultStr)</l>
+<l>*     tuple_number(ResultStr,WorkspaceTranslation)</l>
 <c></c>
-<l>PoseInWorldCoordinates := CameraPose</l>
+<l>* axis_angle_to_quat(RotationAxis[0],RotationAxis[1],RotationAxis[2],RotationAngle,PoseQuaternion)</l>
+<l>* quat_to_hom_mat3d (PoseQuaternion,PoseRotationMatrix)</l>
+<l>* hom_mat3d_translate(PoseRotationMatrix,WorkspaceTranslation[0],WorkspaceTranslation[1],WorkspaceTranslation[2],PoseHomMat3D)</l>
+<l>* hom_mat3d_to_pose (PoseHomMat3D,CameraPose)</l>
+<c></c>
+<l>* PoseInWorldCoordinates := CameraPose</l>
 <c></c>
 <c>*get XYZ translation from ensenso pose</c>
-<l>WorkspaceTranslation[0] := PoseInWorldCoordinates[0]</l>
-<l>WorkspaceTranslation[1] := PoseInWorldCoordinates[1]</l>
-<l>WorkspaceTranslation[2] := PoseInWorldCoordinates[2]</l>
+<l>* WorkspaceTranslation[0] := PoseInWorldCoordinates[0]</l>
+<l>* WorkspaceTranslation[1] := PoseInWorldCoordinates[1]</l>
+<l>* WorkspaceTranslation[2] := PoseInWorldCoordinates[2]</l>
 <c></c>
 <c>*convert ensenso pose to homogeneous matrix</c>
-<l>pose_to_hom_mat3d(PoseInWorldCoordinates,PoseHomMat3D)</l>
+<l>* pose_to_hom_mat3d(PoseInWorldCoordinates,PoseHomMat3D)</l>
 <c></c>
 <c>*translate the pose to the origin so that rotation axes and angles can be obtained</c>
-<l>hom_mat3d_translate(PoseHomMat3D,-WorkspaceTranslation[0],-WorkspaceTranslation[1],-WorkspaceTranslation[2],PoseRotationMatrix)</l>
+<l>* hom_mat3d_translate(PoseHomMat3D,-WorkspaceTranslation[0],-WorkspaceTranslation[1],-WorkspaceTranslation[2],PoseRotationMatrix)</l>
 <c></c>
 <c>*calculate the quaternion representation of the rotation matrix</c>
 <c>*TODO: test in singularity and the example poses from this website</c>
 <c>* http://www.euclideanspace.com/maths/geometry/rotations/conversions/matrixToQuaternion/examples/index.htm</c>
-<l>ensenso_hom_mat3d_to_quat (PoseRotationMatrix, Quaternion)</l>
+<l>* ensenso_hom_mat3d_to_quat (PoseRotationMatrix, Quaternion)</l>
 <c></c>
-<l>ensenso_quat_to_axis_angle (Quaternion, Angle2, RotationAxis2)</l>
-<c></c>
-<c></c>
+<l>* ensenso_quat_to_axis_angle (Quaternion, Angle2, RotationAxis2)</l>
 <c></c>
 <c></c>
 <c></c>
+<c></c>
+<l>nxLibSetPose(NxLibHandle,'Cameras/BySerialNo/'+Serial+'/Link/',PoseInWorldCoordinates)</l>
 <c></c>
 <c></c>
 <c></c>
 <c></c>
 <c></c>
 <c>*TODO: get serial number from handle and build path string automatically</c>
-<l>set_framegrabber_param(NxLibHandle,'Cameras/BySerialNo/'+Serial+'/Link/Translation', WorkspaceTranslation)</l>
+<l>*set_framegrabber_param(NxLibHandle,'Cameras/BySerialNo/'+Serial+'/Link/Translation', WorkspaceTranslation)</l>
 <l>return ()</l>
 </body>
 <docu id="ensenso_set_pose">
@@ -1537,6 +1543,30 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <item>real</item>
 </type_list>
 </parameter>
+</parameters>
+</docu>
+</procedure>
+<procedure name="ensenso_get_cam_params">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="CamParam0" base_type="ctrl" dimension="0"/>
+<par name="CamParam1" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>nxLibGetRectifiedCameraSetup(AcqHandle,CSMID)</l>
+<l>get_camera_setup_param(CSMID,0,'params',CamParam0)</l>
+<l>get_camera_setup_param(CSMID,1,'params',CamParam1)</l>
+<l>return ()</l>
+</body>
+<docu id="ensenso_get_cam_params">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="CamParam0"/>
+<parameter id="CamParam1"/>
 </parameters>
 </docu>
 </procedure>

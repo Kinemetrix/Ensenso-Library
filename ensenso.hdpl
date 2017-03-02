@@ -35,6 +35,30 @@
 </parameters>
 </docu>
 </procedure>
+<procedure name="ensenso_get_cam_params">
+<interface>
+<ic>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="CamParam0" base_type="ctrl" dimension="0"/>
+<par name="CamParam1" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<l>nxLibGetRectifiedCameraSetup (AcqHandle, CSMID)</l>
+<l>get_camera_setup_param(CSMID,0,'params',CamParam0)</l>
+<l>get_camera_setup_param(CSMID,1,'params',CamParam1)</l>
+<l>return ()</l>
+</body>
+<docu id="ensenso_get_cam_params">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="CamParam0"/>
+<parameter id="CamParam1"/>
+</parameters>
+</docu>
+</procedure>
 <procedure name="ensenso_get_pose">
 <interface>
 <ic>
@@ -221,7 +245,7 @@
 <l>IsLightOn := false</l>
 <l>GenRegions := false</l>
 <c>*TODO: implemenet flex view setting</c>
-<l>FlexView := 0</l>
+<l>FlexView := 'false'</l>
 <c></c>
 <c>*Read gen parameters</c>
 <l>for i:=0 to |GenParamNames|-1 by 1</l>
@@ -264,6 +288,20 @@
 <l>ImageOrder := []</l>
 <l>gen_empty_obj(Images)</l>
 <l>gen_empty_obj(Regions)</l>
+<c></c>
+<c>*Set FlexView</c>
+<l>tuple_is_number(FlexView,isNumber)</l>
+<l>if(isNumber)</l>
+<l>    if(FlexView &gt; 16)</l>
+<l>        ex := ['too many flexview patterns']</l>
+<l>        throw(ex)</l>
+<l>    endif</l>
+<l>    FlexViewSetting := FlexView / 2 </l>
+<l>else</l>
+<l>    FlexViewSetting := 'false'</l>
+<l>endif</l>
+<c></c>
+<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/FlexView', FlexViewSetting)</l>
 <c></c>
 <c>*Get XYZ and Regions</c>
 <l>if(GetXYZ)</l>
@@ -1145,7 +1183,7 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <c></c>
 <c></c>
 <c></c>
-<l>nxLibSetPose(NxLibHandle,'Cameras/BySerialNo/'+Serial+'/Link/',PoseInWorldCoordinates)</l>
+<l>nxLibSetPose (NxLibHandle, 'Cameras/BySerialNo/'+Serial+'/Link/', PoseInWorldCoordinates)</l>
 <c></c>
 <c></c>
 <c></c>
@@ -1543,30 +1581,6 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <item>real</item>
 </type_list>
 </parameter>
-</parameters>
-</docu>
-</procedure>
-<procedure name="ensenso_get_cam_params">
-<interface>
-<ic>
-<par name="AcqHandle" base_type="ctrl" dimension="0"/>
-</ic>
-<oc>
-<par name="CamParam0" base_type="ctrl" dimension="0"/>
-<par name="CamParam1" base_type="ctrl" dimension="0"/>
-</oc>
-</interface>
-<body>
-<l>nxLibGetRectifiedCameraSetup(AcqHandle,CSMID)</l>
-<l>get_camera_setup_param(CSMID,0,'params',CamParam0)</l>
-<l>get_camera_setup_param(CSMID,1,'params',CamParam1)</l>
-<l>return ()</l>
-</body>
-<docu id="ensenso_get_cam_params">
-<parameters>
-<parameter id="AcqHandle"/>
-<parameter id="CamParam0"/>
-<parameter id="CamParam1"/>
 </parameters>
 </docu>
 </procedure>

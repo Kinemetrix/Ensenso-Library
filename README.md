@@ -9,3 +9,6 @@ To use the procedure library, download it to your computer then link to it in HD
 
 
 This was copied from: S:\Data\Engineering\Research and Development\3D Sensing\Utilities\EnsensoN35 Acquisition Tools
+
+
+Run the HDev program "Ensenso_Library Demo.hdev" to see an example of all library function calls.

@@ -35,7 +35,7 @@
 </parameters>
 </docu>
 </procedure>
-<procedure name="ensenso_get_cam_params">
+<procedure name="ensenso_get_cam_params_rect">
 <interface>
 <ic>
 <par name="AcqHandle" base_type="ctrl" dimension="0"/>
@@ -51,7 +51,7 @@
 <l>get_camera_setup_param(CSMID,1,'params',CamParam1)</l>
 <l>return ()</l>
 </body>
-<docu id="ensenso_get_cam_params">
+<docu id="ensenso_get_cam_params_rect">
 <parameters>
 <parameter id="AcqHandle"/>
 <parameter id="CamParam0"/>
@@ -308,7 +308,7 @@
 <l>    try</l>
 <l>        ensenso_grab_xyz (X, Y, Z, Regions, AcqHandle, Exposure3D, GenRegions)</l>
 <l>    catch(ex)</l>
-<l>        throw('Error grabbing XYZ or Regions')</l>
+<l>        throw('Error grabbing XYZ or Regions: ' + ex)</l>
 <l>    endtry</l>
 <l>    concat_obj(Images, X, Images)</l>
 <l>    concat_obj(Images, Y, Images)</l>
@@ -763,7 +763,7 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <c></c>
 <c></c>
 <c>*Open a tcp port, so the internal tree can be browsed with NxTreeView:</c>
-<l>set_framegrabber_param(NxLibHandle, 'do_open_tcp_port', 24000)</l>
+<l>*set_framegrabber_param(NxLibHandle, 'do_open_tcp_port', 24000)</l>
 <c></c>
 <l>set_framegrabber_param(AcqHandle,'auto_grab_data','true')</l>
 <l>return ()</l>

@@ -68,8 +68,9 @@
 <l>select_obj(Images,Z,3)</l>
 <l>xyz_to_object_model_3d (X,Y,Z,OM3D)</l>
 <c></c>
-<c>*gets camera parameters from the device</c>
-<l>ensenso_get_cam_params (AcqHandle, CamParam0, CamParam1)</l>
+<c>*gets rectified camera parameters from the device - this is useful because the X,Y, and Z images</c>
+<c>* are drawn from the same perspective as the rectified camera image.</c>
+<l>ensenso_get_cam_params_rect (AcqHandle, CamParam0, CamParam1)</l>
 <c>*gets the pose of the left camera</c>
 <l>ensenso_get_pose(NxLibHandle,[],[],EnsensoLeftCamPose)</l>
 <l>render_object_model_3d(Image,OM3D,CamParam0,EnsensoLeftCamPose,['lut','intensity'],['rainbow','coord_z'])</l>
@@ -102,7 +103,7 @@
 <c>*==========================================</c>
 <c></c>
 <c>*gets camera parameters from the device</c>
-<l>ensenso_get_cam_params (AcqHandle, CamParam0, CamParam1)</l>
+<l>ensenso_get_cam_params_rect (AcqHandle, CamParam0, CamParam1)</l>
 <c></c>
 <c>*read calibration from a file</c>
 <l>ensenso_read_calibration ('calibration.json', CalParameterNames, CalParameterValues, CalibrationJSON1)</l>

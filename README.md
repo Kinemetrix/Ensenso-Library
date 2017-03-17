@@ -11,3 +11,5 @@ This was copied from: S:\Data\Engineering\Research and Development\3D Sensing\Ut
 
 
 Run the HDev program "Ensenso_Library Demo.hdev" to see an example of all library function calls.
+
+This REQUIRES NxLib 2.0 or greater! Download from https://www.ensenso.com/support/sdk-download/

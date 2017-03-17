@@ -1,6 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <hdevelop file_version="1.1" halcon_version="13.0">
 <library/>
+<procedure name="ensenso_gen_3d">
+<interface>
+<oo>
+<par name="Images" base_type="iconic" dimension="0"/>
+<par name="Region" base_type="iconic" dimension="0"/>
+<par name="Contours" base_type="iconic" dimension="0"/>
+</oo>
+<ic>
+<par name="CommandHandle" base_type="ctrl" dimension="0"/>
+<par name="AcqHandle" base_type="ctrl" dimension="0"/>
+<par name="doComputeNormals" base_type="ctrl" dimension="0"/>
+<par name="doGenRegion" base_type="ctrl" dimension="0"/>
+</ic>
+<oc>
+<par name="Data" base_type="ctrl" dimension="0"/>
+</oc>
+</interface>
+<body>
+<c>*UNUSED)))))))))))))))))</c>
+</body>
+<docu id="ensenso_gen_3d">
+<parameters>
+<parameter id="AcqHandle"/>
+<parameter id="CommandHandle"/>
+<parameter id="Contours"/>
+<parameter id="Data"/>
+<parameter id="Images"/>
+<parameter id="Region"/>
+<parameter id="doComputeNormals"/>
+<parameter id="doGenRegion"/>
+</parameters>
+</docu>
+</procedure>
 <procedure name="ensenso_get_calibration">
 <interface>
 <ic>
@@ -229,24 +262,65 @@
 </ic>
 <oc>
 <par name="ImageOrder" base_type="ctrl" dimension="0"/>
+<par name="ObjectModel3D" base_type="ctrl" dimension="0"/>
 </oc>
 </interface>
 <body>
+<c>*********************************************************************************</c>
+<c>* ensenso_grab</c>
+<c>*********************************************************************************</c>
+<c>* Created by: Justin Swick</c>
+<c>* Date Modified: 3/16/2017</c>
+<c>*</c>
+<c>* Change Log</c>
+<c>* ======================================</c>
+<c>* Date        Author     Description</c>
+<c>* ====        ======     ===========</c>
+<c>* 3/10/17     JS         Removed ensenso_grab_xyz and ensenso_grab_rect functions</c>
+<c>*                        and pulled their code into ensenso_grab to enable</c>
+<c>*                        faster execution times.</c>
+<c>* 3/16/17     JS         New Generic Parameters:</c>
+<c>*                         * 'normals'       - calculate point normals with NxLib</c>
+<c>*                         * 'ortho'         - orthographic projection of point cloud</c>
+<c>*                         * 'norm_win_size' - size of the sliding window to calc normals</c>
+<c>*                         * 'surf_connect'  - z-axis connectivity of the ortho map</c>
+<c>*                         * 'ortho_width'   - width of the orthographic projection</c>
+<c>*                         * 'ortho_height'  - height of the orthographic projection</c>
+<c>*                         * 'pixel_size'    - pixels / mm in the ortho projection</c>
+<c>*</c>
+<c>******************************************************************************************</c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
+<c></c>
 <l>if(|GenParamNames| != |GenParamValues|)</l>
 <l>    throw('Number of gen param names and values are not equal')</l>
 <l>endif</l>
 <c></c>
 <c></c>
 <c>*Default settings for gen parameters</c>
-<l>GetXYZ := false</l>
-<l>GetLeftRect := false</l>
-<l>GetRightRect := false</l>
-<l>GetDisparity := false</l>
-<l>IsLightOn := false</l>
-<l>GenRegions := false</l>
-<c>*TODO: implemenet flex view setting</c>
-<l>FlexView := 'false'</l>
+<l>GetXYZ           := false</l>
+<l>GetLeftRect      := false</l>
+<l>GetRightRect     := false</l>
+<l>GetDisparity     := false</l>
+<l>IsLightOn        := false</l>
+<l>GenRegions       := false</l>
+<l>ComputeNormals   := false</l>
+<l>FlexView         := false</l>
+<l>ComputeOrtho     := false</l>
 <c></c>
+<c>*compute ortho params</c>
+<l>SurfaceConnectivity := 20</l>
+<l>RenderPointMapSize := [2000,2000]</l>
+<l>PixelSize := 1</l>
+<c></c>
+<c>*compute normals params</c>
+<l> NormalWindowSize := 2</l>
+<c>    </c>
 <c>*Read gen parameters</c>
 <l>for i:=0 to |GenParamNames|-1 by 1</l>
 <l>    if(GenParamNames[i] == 'xyz')</l>
@@ -280,76 +354,241 @@
 <l>        endif</l>
 <l>    endif</l>
 <l>    if(GenParamNames[i] == 'flexview')</l>
-<l>            FlexView := GenParamValues[i]</l>
+<l>        FlexView := GenParamValues[i]</l>
+<l>    endif</l>
+<l>    if(GenParamNames[i] == 'normals')</l>
+<l>        if(GenParamValues[i] == 'true')</l>
+<l>            ComputeNormals := true</l>
+<l>        endif</l>
+<l>    endif</l>
+<l>    if(GenParamNames[i] == 'norm_win_size')</l>
+<l>        NormalWindowSize := GenParamValues[i]</l>
+<l>    endif</l>
+<l>    if(GenParamNames[i] == 'ortho')</l>
+<l>        if(GenParamValues[i] == 'true')</l>
+<l>            ComputeOrtho := true</l>
+<l>        endif</l>
+<l>    endif</l>
+<l>    if(GenParamNames[i] == 'surf_connect')</l>
+<l>        SurfaceConnectivity := GenParamValues[i]</l>
+<l>    endif</l>
+<l>    if(GenParamNames[i] == 'ortho_width')</l>
+<l>        RenderPointMapSize[0] := GenParamValues[i]</l>
+<l>    endif</l>
+<l>    if(GenParamNames[i] == 'ortho_height')</l>
+<l>        RenderPointMapSize[1] := GenParamValues[i]</l>
+<l>    endif</l>
+<l>    if(GenParamNames[i] == 'pixel_size')</l>
+<l>        PixelSize := GenParamValues[i]</l>
 <l>    endif</l>
 <l>endfor</l>
 <c></c>
+<c>*======================================</c>
+<c>* Setup</c>
+<c>*======================================</c>
+<c></c>
+<c> </c>
 <c>*Generate default results</c>
 <l>ImageOrder := []</l>
 <l>gen_empty_obj(Images)</l>
 <l>gen_empty_obj(Regions)</l>
 <c></c>
-<c>*Set FlexView</c>
-<l>tuple_is_number(FlexView,isNumber)</l>
-<l>if(isNumber)</l>
-<l>    if(FlexView &gt; 16)</l>
-<l>        ex := ['too many flexview patterns']</l>
-<l>        throw(ex)</l>
-<l>    endif</l>
-<l>    FlexViewSetting := FlexView / 2 </l>
-<l>else</l>
-<l>    FlexViewSetting := 'false'</l>
-<l>endif</l>
-<c></c>
-<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/FlexView', FlexViewSetting)</l>
-<c></c>
-<c>*Get XYZ and Regions</c>
+<c>*GrabDataItems will be appended to this tuple so that a minimum amount</c>
+<c>* of data will be transferred between the Ensenso camera and PC.</c>
+<l>GrabDataItems := []</l>
+<c>*GrabDataItemsRoot is for items that are calculated on the PC side via NxLibHandle.</c>
+<l>GrabDataItemsRoot := []</l>
+<c>*======================================</c>
+<c>* Capture Images for 3D Reconstruction</c>
+<c>*======================================</c>
 <l>if(GetXYZ)</l>
+<l>    GrabDataItems := [GrabDataItems, 'Images/PointMap']</l>
+<c>    *Turn on the projector otherwise the point clouds will be very sparse</c>
+<l>    set_framegrabber_param (AcqHandle, 'Parameters/Capture/Projector', 'true')</l>
+<c>    </c>
+<c>    *Set FlexView (N35 or X series only)</c>
+<l>    tuple_is_number(FlexView,isNumber)</l>
+<l>    if(isNumber)</l>
+<l>        if(FlexView &gt; 16)</l>
+<l>            ex := ['too many flexview patterns']</l>
+<l>            throw(ex)</l>
+<l>        endif</l>
+<l>        if(FlexView == 0)</l>
+<l>            FlexViewSetting := 'false'</l>
+<l>        else</l>
+<l>            FlexViewSetting := FlexView / 2 </l>
+<l>        endif</l>
+<l>    else</l>
+<l>        FlexViewSetting := 'false'</l>
+<l>    endif</l>
+<l>    set_framegrabber_param (AcqHandle, 'Parameters/Capture/FlexView',FlexViewSetting)</l>
+<c></c>
+<c>    *determine whether to return regions - must use regions to generate normals!</c>
+<l>    if(GenRegions or ComputeNormals)</l>
+<l>        set_framegrabber_param (AcqHandle, 'generate_regions', 'true')</l>
+<l>    else</l>
+<l>        set_framegrabber_param (AcqHandle, 'generate_regions', 'false')</l>
+<l>    endif</l>
+<c>    *set exposure for the 3d acquisiton (separate from 2d)</c>
+<l>    set_framegrabber_param (AcqHandle, 'Parameters/Capture/Exposure', Exposure3D)</l>
+<c>    *capture images for 3d reconstruction. </c>
+<l>    set_framegrabber_param (NxLibHandle, 'do_execute', 'Capture')</l>
+<c>    *compute a disparity map from the images</c>
+<l>    set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputeDisparityMap')</l>
+<c>    *compute a point map (XYZ image) from the disparity map</c>
+<l>    set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputePointMap')</l>
+<c></c>
+<l>    if(ComputeOrtho)</l>
+<c>        *delta z for connecting the surface for render point map</c>
+<l>        set_framegrabber_param (NxLibHandle, 'Parameters/SurfaceConnectivity', SurfaceConnectivity)</l>
+<l>        set_framegrabber_param (NxLibHandle, 'Parameters/RenderPointMap/Size/', RenderPointMapSize)</l>
+<c>        *Pixel size is px/mm</c>
+<l>        set_framegrabber_param (NxLibHandle, 'Parameters/RenderPointMap/PixelSize', PixelSize)</l>
+<l>        set_framegrabber_param(NxLibHandle,'do_execute','RenderPointMap')</l>
+<l>        set_framegrabber_param (NxLibHandle, 'grab_data_items','Images/RenderPointMap')</l>
+<l>        GrabDataItemsRoot := [GrabDataItemsRoot,'Images/RenderPointMap']</l>
+<l>    endif</l>
+<c>    </c>
+<l>    if(ComputeNormals)</l>
+<l>        NormalWindowRadius := (NormalWindowSize-1)/2</l>
+<l>        set_framegrabber_param (NxLibHandle, 'ComputeNormals/Parameters/Radius', NormalWindowSize)</l>
+<l>        set_framegrabber_param(NxLibHandle, 'do_execute', 'ComputeNormals')</l>
+<l>        GrabDataItems := [GrabDataItems,'Images/Normals']</l>
+<l>    endif</l>
+<c></c>
+<c>    </c>
+<c>    *Grab all of the 3d data from the camera</c>
 <l>    try</l>
-<l>        ensenso_grab_xyz (X, Y, Z, Regions, AcqHandle, Exposure3D, GenRegions)</l>
-<l>    catch(ex)</l>
-<l>        throw('Error grabbing XYZ or Regions: ' + ex)</l>
-<l>    endtry</l>
-<l>    concat_obj(Images, X, Images)</l>
-<l>    concat_obj(Images, Y, Images)</l>
-<l>    concat_obj(Images, Z, Images)</l>
-<l>    tuple_concat(ImageOrder, 'X', ImageOrder)</l>
-<l>    tuple_concat(ImageOrder, 'Y', ImageOrder)</l>
-<l>    tuple_concat(ImageOrder, 'Z', ImageOrder)</l>
-<l>endif</l>
-<c></c>
-<c>*Get the rectified images</c>
-<l>GenParamNames1 := ['light_on']</l>
-<l>GenParamValues1 := ['true']</l>
-<l>if(GetLeftRect)</l>
-<l>    tuple_concat(GenParamNames1, 'left', GenParamNames1)</l>
-<l>    tuple_concat(GenParamValues1, 'true', GenParamValues1)</l>
-<l>endif</l>
-<l>if(GetRightRect)</l>
-<l>    tuple_concat(GenParamNames1, 'right', GenParamNames1)</l>
-<l>    tuple_concat(GenParamValues1, 'true', GenParamValues1)</l>
-<l>endif</l>
-<c> </c>
-<l>try</l>
-<l>    ensenso_grab_rect (RightImage, LeftImage, AcqHandle, NxLibHandle, ExposureGray, GenParamNames1, GenParamValues1)</l>
-<l>catch(ex)</l>
-<l>    throw('Error grabbing rectified images')</l>
-<l>endtry</l>
-<c></c>
-<l>if(GetLeftRect)</l>
-<l>    concat_obj(Images, LeftImage, Images)</l>
-<l>    tuple_concat(ImageOrder, 'Left', ImageOrder)</l>
-<l>endif</l>
-<c></c>
-<l>if(GetRightRect)</l>
-<l>    concat_obj(Images, RightImage, Images)</l>
-<l>    tuple_concat(ImageOrder, 'Right', ImageOrder)</l>
-<l>endif</l>
+<l>        if(|GrabDataItems| &gt; 0)</l>
+<l>            set_framegrabber_param (AcqHandle, 'grab_data_items', GrabDataItems)</l>
+<l>            grab_data (DeviceImages, Region, Contours, AcqHandle, Data)</l>
+<l>        endif</l>
+<c>        </c>
+<l>        if(|GrabDataItemsRoot| &gt; 0)</l>
+<l>            set_framegrabber_param (NxLibHandle, 'grab_data_items', GrabDataItemsRoot)</l>
+<l>            grab_data (NxLibImages, Region, Contours, NxLibHandle, Data)</l>
+<l>            concat_obj(Images, NxLibImages, Images)</l>
+<l>            count_obj(NxLibImages,numNxImages)</l>
+<l>            for i := 0 to numNxImages-1 by 1</l>
+<l>                tuple_concat(ImageOrder, 'NxLibImages', ImageOrder)</l>
+<l>            endfor</l>
+<l>        endif</l>
 <c>  </c>
+<c>        *This is where the point cloud is created</c>
+<l>        if(ComputeNormals)</l>
+<l>            select_obj(DeviceImages,XYZImages,1)</l>
+<l>            select_obj(DeviceImages,NormsImages,2)</l>
+<l>            decompose3(XYZImages,XImg,YImg,ZImg)            </l>
+<l>            decompose3(NormsImages,XnImg,YnImg,ZnImg)</l>
+<c>            * create mask noisy normalized normals   </c>
+<c>            * +/- 0.5773 is the value assigned to point normal components from points where kernel is degenerate</c>
+<c>            * if you take an L2 norm of [0.5773, 0.5773, 0.5773] in an R3 space, it equals 1.  </c>
+<l>            threshold(ZnImg,ZnMaskRegion,[0,0.5776],[0.5770,9999999999])</l>
+<l>            select_obj(Region,RegionCoords,1)</l>
+<l>            intersection(RegionCoords,ZnMaskRegion, ValidPixelMask)</l>
+<l>            reduce_domain(ZImg,ValidPixelMask, ZImageReduced)</l>
+<l>            xyz_attrib_to_object_model_3d (XImg, YImg, ZImg, NormsImages, ['point_normal_x','point_normal_y','point_normal_z'], ObjectModel3D)</l>
+<l>        else</l>
+<l>            decompose3(DeviceImages,XImg,YImg,ZImg)</l>
+<l>            xyz_to_object_model_3d (XImg,YImg,ZImg,ObjectModel3D)</l>
+<l>        endif</l>
+<c>        </c>
+<c>        ***THIS APPEARS TO ALREADY BE DONE IN XYZ_ATTRIB_TO_OM3D******</c>
+<c>        *Set 2D mapping - this is required for edge-supported surface matching in Halcon</c>
+<l>*         get_region_points(ValidPixelMask,CamRowsValid, CamColumnsValid) </l>
+<l>*         get_image_size(XImg,ImageWidth,ImageHeight)</l>
+<l>*         PixelMapping:=[ImageWidth,ImageHeight,CamRowsValid,CamColumnsValid]</l>
+<l>*         set_object_model_3d_attrib_mod (ObjectModel3D, 'xyz_mapping', [], PixelMapping)</l>
+<c>        </c>
+<l>    catch(Exception)</l>
+<l>        get_framegrabber_param (NxLibHandle, 'error_code', ErrorCode)</l>
+<l>        if (ErrorCode == 17)</l>
+<c>           * A command has failed to execute successfully. Print all information to identify what happened.</c>
+<l>           get_framegrabber_param (NxLibHandle, 'Execute/Result/ErrorSymbol', ErrorSymbol)</l>
+<l>           get_framegrabber_param (NxLibHandle, 'Execute/Result/ErrorText', ErrorText)</l>
+<l>           throw ('The execution of a command failed with error ' + ErrorSymbol + '. Message: ' + ErrorText)</l>
+<l>        else</l>
+<c>           * Access to some tree node failed. Print the error code and corresponding text.</c>
+<l>           get_framegrabber_param (NxLibHandle, 'error_item', ErrorItem)</l>
+<l>           get_framegrabber_param (NxLibHandle, 'error_text', ErrorText)</l>
+<l>           throw ('An NxLib API error ' + ErrorCode + ' occurred when accessing the item ' + ErrorItem + '. Message: ' + ErrorText)</l>
+<l>        endif</l>
+<l>    endtry</l>
+<c></c>
+<l>endif</l>
+<c></c>
+<c>*=====================================================================</c>
+<c>*Capture 2D Images</c>
+<c>*=====================================================================</c>
+<l>if(GetLeftRect or GetRightRect)</l>
+<l>    try      </l>
+<c>        *set the exposure for the gray images</c>
+<l>        set_framegrabber_param (AcqHandle, 'Parameters/Capture/Exposure', ExposureGray)</l>
+<c>        *set the front light state</c>
+<l>        if(IsLightOn)</l>
+<l>            set_framegrabber_param (AcqHandle, 'Parameters/Capture/FrontLight', 'true')</l>
+<l>        else</l>
+<l>            set_framegrabber_param (AcqHandle, 'Parameters/Capture/FrontLight', 'false')</l>
+<l>        endif</l>
+<c>        *set the projector pattern state (always off when you just want a pretty camera image)</c>
+<l>        set_framegrabber_param (AcqHandle, 'Parameters/Capture/Projector', 'false')</l>
+<c>        *turn off FlexView, otherwise it will capture n images per camera rather than 1</c>
+<l>        set_framegrabber_param (AcqHandle, 'Parameters/Capture/FlexView', 'false')</l>
+<c>        </c>
+<c>        *Grab the L/R Images</c>
+<l>        gen_empty_obj(LeftImage)</l>
+<l>        gen_empty_obj(RightImage)</l>
+<l>        GrabList := []</l>
+<l>        if(GetLeftRect)</l>
+<l>            tuple_concat(GrabList,'Images/Rectified/Left',GrabList)</l>
+<l>        endif</l>
+<l>        if(GetRightRect)</l>
+<l>            tuple_concat(GrabList,'Images/Rectified/Right',GrabList)</l>
+<l>        endif</l>
+<c>        </c>
+<l>        set_framegrabber_param (AcqHandle, 'grab_data_items', GrabList)</l>
+<l>        set_framegrabber_param (NxLibHandle,'do_execute','Capture')</l>
+<l>        set_framegrabber_param (NxLibHandle, 'do_execute', 'RectifyImages')</l>
+<l>        grab_data (EnsensoImages, Region, Contours, AcqHandle, Data)</l>
+<c></c>
+<c></c>
+<c>        *Split the L/R Image tuple into individual images (select_obj is NOT a deep copy operation)</c>
+<l>        try</l>
+<l>            if(GetLeftRect)</l>
+<l>                select_obj(EnsensoImages,LeftImage,1)</l>
+<l>                if(GetRightRect)</l>
+<l>                    select_obj(EnsensoImages,RightImage,2)</l>
+<l>                endif</l>
+<l>            elseif(GetRightRect)</l>
+<l>                select_obj(EnsensoImages,RightImage,1)</l>
+<l>            endif</l>
+<l>        catch(ex)</l>
+<l>        endtry</l>
+<l>    catch(ex)</l>
+<l>        throw('Error grabbing rectified images')</l>
+<l>    endtry</l>
+<c>    </c>
+<l>    if(GetLeftRect)</l>
+<l>        concat_obj(Images, LeftImage, Images)</l>
+<l>        tuple_concat(ImageOrder, 'Left', ImageOrder)</l>
+<l>    endif</l>
+<c>    </c>
+<l>    if(GetRightRect)</l>
+<l>        concat_obj(Images, RightImage, Images)</l>
+<l>        tuple_concat(ImageOrder, 'Right', ImageOrder)</l>
+<l>    endif</l>
+<l>endif</l>
+<c></c>
+<c>*======================</c>
 <c>* Get Disparity Map</c>
+<c>*======================</c>
+<l>if(GetXYZ == false and GetDisparity == true)</l>
+<l>    throw('GetXYZ must be enabled to get disparity map')</l>
+<l>endif</l>
+<c></c>
 <l>if(GetDisparity)</l>
 <l>   set_framegrabber_param (AcqHandle, 'grab_data_items', ['Images/DisparityMap']) </l>
-<l>   grab_data (ImageDisparity, Region, Contours, AcqHandle, Data)</l>
+<l>   grab_data (ImageDisparity, R, C, AcqHandle, D)</l>
 <l>   concat_obj(Images, ImageDisparity, Images)</l>
 <l>   tuple_concat(ImageOrder, 'Disparity', ImageOrder)</l>
 <l>endif</l>
@@ -424,6 +663,7 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <parameter id="NxLibHandle">
 <description lang="en_US">Handle to the root node of the Ensenso parameter tree.  This is used for data operations.</description>
 </parameter>
+<parameter id="ObjectModel3D"/>
 <parameter id="Regions">
 <description lang="en_US">Regions where the sensor can reconstruct 3d points.  Enable/disable region output with the 'region' setting for general parameter names/values.</description>
 </parameter>
@@ -491,6 +731,9 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <c>*set the projector pattern state</c>
 <l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/Projector', 'false')</l>
 <c></c>
+<c>*set the flexview parameter, otherwise it will capture n images per camera rather than 1</c>
+<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/FlexView', 1)</l>
+<c></c>
 <c>*Grab the L/R Images</c>
 <l>gen_empty_obj(LeftImage)</l>
 <l>gen_empty_obj(RightImage)</l>
@@ -549,8 +792,11 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 </oo>
 <ic>
 <par name="AcqHandle" base_type="ctrl" dimension="0"/>
+<par name="NxLibHandle" base_type="ctrl" dimension="0"/>
 <par name="ExposureMS" base_type="ctrl" dimension="0"/>
 <par name="GenRegions" base_type="ctrl" dimension="0"/>
+<par name="FlexView" base_type="ctrl" dimension="0"/>
+<par name="ComputeNormals" base_type="ctrl" dimension="0"/>
 </ic>
 </interface>
 <body>
@@ -558,27 +804,76 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <l>    GenRegions := 'true'</l>
 <l>endif</l>
 <c></c>
-<c>* Set the tree items returned when calling 'grab_data'</c>
-<l>set_framegrabber_param (AcqHandle, 'grab_data_items', ['Images/PointMap'])</l>
+<c>*Set FlexView</c>
+<l>tuple_is_number(FlexView,isNumber)</l>
+<l>if(isNumber)</l>
+<l>    if(FlexView &gt; 16)</l>
+<l>        ex := ['too many flexview patterns']</l>
+<l>        throw(ex)</l>
+<l>    endif</l>
+<l>    FlexViewSetting := FlexView / 2 </l>
+<l>else</l>
+<l>    FlexViewSetting := 'false'</l>
+<l>endif</l>
 <c></c>
-<c>* Prevent regions from being generated/transmitted   </c>
+<l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/FlexView',FlexViewSetting)</l>
+<c> </c>
 <l>set_framegrabber_param (AcqHandle, 'generate_regions', GenRegions)</l>
 <c></c>
-<c></c>
 <l>set_framegrabber_param (AcqHandle, 'Parameters/Capture/Exposure', ExposureMS)</l>
+<c></c>
+<c></c>
+<c></c>
+<l>*grab_data (ImageXYZ, Regions, Contours, AcqHandle, Data)</l>
+<c></c>
+<l>set_framegrabber_param(AcqHandle,'auto_grab_data','false')</l>
+<l>GrabDataItems := ['Images/PointMap']</l>
+<c></c>
+<l>set_framegrabber_param (NxLibHandle, 'do_execute', 'Capture')</l>
+<l>set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputeDisparityMap')</l>
+<l>set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputePointMap')</l>
+<l>if(ComputeNormals == 'true')</l>
+<l>    set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputeNormals')</l>
+<l>    GrabDataItems := [GrabDataItems, 'Images/Normals']</l>
+<l>endif</l>
+<c></c>
+<l>set_framegrabber_param (AcqHandle, 'grab_data_items', GrabDataItems)</l>
+<l>*set_framegrabber_param (NxLibHandle, 'exec:Parameters/FinalTrigger', 'All')</l>
 <l>grab_data (ImageXYZ, Regions, Contours, AcqHandle, Data)</l>
 <c></c>
+<c></c>
 <c>*Split the result data into individual images (access_channel MAY be a deep copy method)</c>
-<l>access_channel (ImageXYZ, X, 1)   </l>
-<l>access_channel (ImageXYZ, Y, 2) </l>
-<l>access_channel (ImageXYZ, Z, 3)</l>
+<l>tuple_length(GrabDataItems, NumGrabDataItems)</l>
+<l>if(NumGrabDataItems == 1)</l>
+<c>    *coordinate images only</c>
+<l>    access_channel (ImageXYZ, X, 1)   </l>
+<l>    access_channel (ImageXYZ, Y, 2) </l>
+<l>    access_channel (ImageXYZ, Z, 3)    </l>
+<l>elseif(NumGrabDataItems == 2)</l>
+<c>    *collect normals as another channel of coordinate images</c>
+<l>    select_obj(ImageXYZ, ImageCoords, 1)</l>
+<l>    access_channel (ImageCoords, Xc, 1)   </l>
+<l>    access_channel (ImageCoords, Yc, 2) </l>
+<l>    access_channel (ImageCoords, Zc, 3)  </l>
+<l>    select_obj(ImageXYZ, ImageNorms, 2)</l>
+<l>    access_channel (ImageNorms, Xn, 1)</l>
+<l>    access_channel (ImageNorms, Yn, 2)</l>
+<l>    access_channel (ImageNorms, Zn, 3)</l>
+<l>    concat_obj(Xc,Xn,X)</l>
+<l>    concat_obj(Yc,Yn,Y)</l>
+<l>    concat_obj(Zc,Zn,Z)</l>
+<l>endif</l>
+<c></c>
 <l>return ()</l>
 </body>
 <docu id="ensenso_grab_xyz">
 <parameters>
 <parameter id="AcqHandle"/>
+<parameter id="ComputeNormals"/>
 <parameter id="ExposureMS"/>
+<parameter id="FlexView"/>
 <parameter id="GenRegions"/>
+<parameter id="NxLibHandle"/>
 <parameter id="Regions"/>
 <parameter id="X"/>
 <parameter id="Y"/>
@@ -750,31 +1045,55 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <oc>
 <par name="AcqHandle" base_type="ctrl" dimension="0"/>
 <par name="NxLibHandle" base_type="ctrl" dimension="0"/>
+<par name="Error" base_type="ctrl" dimension="0"/>
 </oc>
 </interface>
 <body>
+<c>*Validate the SerialNumber parameter</c>
+<l>tuple_strlen(SerialNumber,SerialLength)</l>
+<l>if(SerialLength &lt; 5)</l>
+<c>    * Open the first available stereo camera</c>
+<l>    info_framegrabber ('Ensenso-NxLib', 'info_boards', Information, Status)</l>
+<l>    tuple_regexp_test(Status,'available',numMatches)</l>
+<l>    if(numMatches == 0)</l>
+<l>        tuple_regexp_test(Status,'used',numMatches)</l>
+<l>        if(numMatches == 1)</l>
+<l>            throw('Connection error: ensenso is in use.  Info: '+ Status)</l>
+<l>        else</l>
+<l>            throw('Connection error: ensenso cannot connect.  Info: '+ Status)</l>
+<l>        endif</l>
+<l>    endif</l>
+<l>endif</l>
 <c></c>
+<l>try</l>
+<c>*Open a camera device.  This will be used with grab_image or grab_data.</c>
+<l>open_framegrabber ('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', -1, 'Rectified', \
+                   'auto_grab_data=0', 'default', 'stereo', SerialNumber, 0, -1, AcqHandle)</l>
+<l>catch(ex)</l>
+<l>    throw('Error opening camera: \n'+ex)</l>
+<l>endtry</l>
 <c></c>
+<l>try</l>
+<c>*Open the NxLib root node.  This allows access to all items in the NxLib DLL.  Think of this</c>
+<c>* as the PC and AcqHandle as the device</c>
+<l>open_framegrabber ('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', -1, 'Raw', \
+                   'auto_grab_data=0', 'default', 'Item', '/', 0, -1, NxLibHandle)</l>
+<l>catch(ex)</l>
+<l>    throw('Error opening NxLib root node: \n'+ex)</l>
+<l>endtry</l>
 <c></c>
-<c></c>
-<l>open_framegrabber ('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', -1, 'Rectified', -1, 'default', 'stereo', '', 0, -1, AcqHandle)</l>
-<c></c>
-<l>open_framegrabber ('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', -1, 'Rectified', -1, 'default', 'Item', '', 0, -1, NxLibHandle)</l>
-<c></c>
-<c></c>
+<l>try</l>
 <c>*Open a tcp port, so the internal tree can be browsed with NxTreeView:</c>
-<l>*set_framegrabber_param(NxLibHandle, 'do_open_tcp_port', 24000)</l>
+<l>set_framegrabber_param(NxLibHandle, 'do_open_tcp_port', 24000)</l>
+<l>catch(ex)</l>
+<l>    Error := -1</l>
+<l>endtry</l>
 <c></c>
-<l>set_framegrabber_param(AcqHandle,'auto_grab_data','true')</l>
+<c>*always wait for the projector led to charge fully, otherwise if you exceed the duty cycle</c>
+<c>* of the device, the images will get dim as the cycle time shortens.</c>
+<l>set_framegrabber_param (NxLibHandle, 'Capture/Parameters/WaitForProjector', 'true')</l>
+<c></c>
 <l>return ()</l>
-<c></c>
-<c>*without 'auto_grab_data' following commands would be needed for the same result:</c>
-<l>*set_framegrabber_param (AcqHandle, 'auto_grab_data', 'false')</l>
-<l>*open_framegrabber('Ensenso-NxLib', 0, 0, 0, 0, 0, 0, 'default', 0, 'Raw', -1, 'false', 'Item', '/', 0, 0, NxLibHandle)</l>
-<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'Capture')</l>
-<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputeDisparityMap')</l>
-<l>*set_framegrabber_param (NxLibHandle, 'do_execute', 'ComputePointMap')</l>
-<l>*grab_data (Image, Region, Contours, AcqHandle, Data)</l>
 </body>
 <docu id="ensenso_initialize">
 <abstract lang="en_US">This procedure simplifies connection / initialization of the Ensenso N-series stereo 3d sensor.</abstract>
@@ -789,6 +1108,7 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <parameter id="AcqHandle">
 <description lang="en_US">Handle of the selected Ensenso sensor</description>
 </parameter>
+<parameter id="Error"/>
 <parameter id="Exposure">
 <default_value>0</default_value>
 <description lang="en_US">Exposure in milliseconds, choose 0 for auto</description>
@@ -815,14 +1135,10 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <parameter id="GrabRaw">
 <default_value>'false'</default_value>
 <description lang="en_US">Grab the raw camera image (not rectified, distorted)</description>
-<value_max>0.00</value_max>
-<value_min>0.00</value_min>
 </parameter>
 <parameter id="GrabRect">
 <default_value>'true'</default_value>
 <description lang="en_US">Grab the rectified camera images</description>
-<value_max>0.00</value_max>
-<value_min>0.00</value_min>
 </parameter>
 <parameter id="GrabRegions">
 <default_value>'false'</default_value>
@@ -1246,23 +1562,39 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <par name="AcqHandle" base_type="ctrl" dimension="0"/>
 <par name="NxLibHandle" base_type="ctrl" dimension="0"/>
 </ic>
+<oc>
+<par name="Error" base_type="ctrl" dimension="0"/>
+</oc>
 </interface>
 <body>
 <c>*ensenso has a handle for the cameras and the NxLib tree root (NxLibHandle).  Both must be closed to release the device.</c>
+<l>Error := 0</l>
+<c></c>
+<l>try</l>
+<l>    set_framegrabber_param(NxLibHandle, 'do_close_tcp_port', [])</l>
+<l>catch(ex)</l>
+<l>    Error := -3</l>
+<l>endtry</l>
+<c></c>
 <l>try</l>
 <l>close_framegrabber (AcqHandle)</l>
 <l>catch(ex)</l>
+<l>    Error := -1</l>
 <l>endtry</l>
 <l>try</l>
 <l>close_framegrabber (NxLibHandle)</l>
 <l>catch(ex)</l>
+<l>    Error := -2</l>
 <l>endtry</l>
+<c></c>
+<c></c>
 <c></c>
 <l>return ()</l>
 </body>
 <docu id="ensenso_try_close">
 <parameters>
 <parameter id="AcqHandle"/>
+<parameter id="Error"/>
 <parameter id="NxLibHandle"/>
 </parameters>
 </docu>

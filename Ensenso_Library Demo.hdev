@@ -18,81 +18,341 @@
 <c>*====================================================================================</c>
 <c>* Pre-Trigger</c>
 <c>*====================================================================================</c>
-<l>AcqHandle := -1</l>
+<l>WindowHandle := 200000</l>
+<c></c>
+<c>*The NxLibHandle is a handle to the root node of the Ensenso library (NxLib).  This is</c>
+<c>* on the host PC.  The AcqHandle is to the 'camera' node of the Ensenso Library.  It</c>
+<c>* is a remote device.  There could be more than one device attached, in which case you</c>
+<c>* would want to call ensenso_initialize once for each camera.  There will still only</c>
+<c>* be one NxLib handle for multiple cameras.</c>
+<l>AcqHandle0 := -1</l>
 <l>NxLibHandle := -1</l>
-<c>* Open the first available stereo camera</c>
-<l>info_framegrabber ('Ensenso-NxLib', 'info_boards', Information, Serial)</l>
-<l>ensenso_initialize (TestImage, Serial, 5, 'false', 'true', 'true', 'false', [], [], AcqHandle, NxLibHandle)   </l>
+<c>* Open the first available stereo camera.  A specific camera can be opened by setting Serial</c>
+<l>Serial := ''</l>
+<l>ensenso_initialize (TestImage, Serial, 5, 'false', 'true', 'true', 'false', [], [], AcqHandle0, NxLibHandle, Error1)</l>
 <c></c>
-<l>if(AcqHandle == -1 or NxLibHandle == -1)</l>
-<l>    disp_message(200000,'error, ensenso cannot connect','window', 12, 12, 'black', 'true')</l>
+<l>if(0)</l>
+<c>    *get calibration from the device</c>
+<l>    ensenso_get_calibration (AcqHandle0, CalParameterNames, CalParameterValues, CalibrationJSONFromDevice)</l>
+<c>    </c>
+<c>    </c>
+<c>    *get settings from the device (use AcqHandle, not NxLibHandle)</c>
+<l>    ensenso_get_settings (AcqHandle0, EnsensoParameters, ParameterNames, ParameterValues)</l>
+<c>    </c>
+<c>    *save the settings to a json file that matches the one from NxView</c>
+<l>    open_file ('C:/temp/mySettings.json', 'output', FileHandle)</l>
+<l>    fwrite_string(FileHandle,EnsensoParameters)</l>
+<l>    close_file(FileHandle)</l>
+<c>    </c>
+<c>    *read settings from a file</c>
+<l>    ensenso_read_settings ('parameters.json', EnsensoParamNames, EnsensoParamValues, ParametersJSON)</l>
+<c>    </c>
+<c>    </c>
+<c>    *set ensenso parameters individually or as a tuple.  </c>
+<c>    * Note: EnsensoParameters is applied first, then ParameterNames and ParameterValues</c>
+<l>    ParameterNames1 := ['Parameters/Capture/UseDisparityMapAreaOfInterest']</l>
+<l>    ParameterValues1 := ['true']</l>
+<l>    ensenso_set_settings (AcqHandle0, ParametersJSON, ParameterNames1, ParameterValues1)</l>
+<c>    </c>
+<c>    *restore device settings</c>
+<l>    ensenso_set_settings (AcqHandle0, ParametersJSON, ParameterNames, ParameterValues)</l>
 <l>endif</l>
-<c></c>
-<c>*read settings from a file</c>
-<l>ensenso_read_settings ('parameters.json', EnsensoParamNames, EnsensoParamValues, ParametersJSON)</l>
-<c></c>
-<c>*get settings from the device (use AcqHandle, not NxLibHandle)</c>
-<l>ensenso_get_settings (AcqHandle, EnsensoParameters, ParameterNames, ParameterValues)</l>
-<c></c>
-<c>*save the settings to a json file that matches the one from NxView</c>
-<l>open_file ('C:/temp/mySettings.json', 'output', FileHandle)</l>
-<l>fwrite_string(FileHandle,EnsensoParameters)</l>
-<l>close_file(FileHandle)</l>
-<c></c>
-<c>*set ensenso parameters individually or as a tuple.  </c>
-<c>* Note: EnsensoParameters is applied first, then ParameterNames and ParameterValues</c>
-<l>ParameterNames := ['Parameters/Capture/UseDisparityMapAreaOfInterest']</l>
-<l>ParameterValues := ['true']</l>
-<l>ensenso_set_settings (AcqHandle, ParametersJSON, ParameterNames, ParameterValues)</l>
-<c></c>
-<c></c>
-<c>*get calibration from the device</c>
-<l>ensenso_get_calibration (AcqHandle, CalParameterNames, CalParameterValues, CalibrationJSONFromDevice)</l>
-<c></c>
-<c></c>
-<c>* Assign Exposure levels</c>
-<l>Exposure3D:=4</l>
-<l>ExposureGray:=6</l>
-<c>   </c>
+<c> </c>
 <c>*====================================================================================</c>
 <c>* Online </c>
 <c>*====================================================================================</c>
 <l>dev_clear_window()</l>
-<c>*general purpose grab procedure, returns nothing by default, specify the data you want with gen param names and values</c>
-<c>*TODO: implement FLEXVIEW setting</c>
-<l>GenParamNames := ['xyz',  'left_rect', 'right_rect', 'disparity', 'regions', 'light_on', 'flexview']</l>
-<l>GenParamValues :=['true', 'true',      'true',       'false',     'false',   'true',    4]</l>
-<l>ensenso_grab (Images, Regions, AcqHandle, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder)</l>
-<l>select_obj(Images,X,1)</l>
-<l>select_obj(Images,Y,2)</l>
-<l>select_obj(Images,Z,3)</l>
-<l>xyz_to_object_model_3d (X,Y,Z,OM3D)</l>
+<c></c>
+<c>* Assign Exposure levels</c>
+<l>Exposure3D:=4</l>
+<l>ExposureGray:=6</l>
+<c></c>
+<c>*general purpose grab procedure, returns nothing by default. </c>
+<c>* specify the data you want with GenParamNames and GenParamValues</c>
+<l>GenParamNames := ['xyz' ,  'left_rect', 'right_rect', 'disparity', 'regions', 'light_on', 'flexview','normals']</l>
+<l>GenParamValues :=['true',  'true'     , 'false'     , 'false'    , 'false'  , 'true'    , 16        ,'true']</l>
+<l>ensenso_grab (Images, Regions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, OM3D)</l>
+<c></c>
 <c></c>
 <c>*gets rectified camera parameters from the device - this is useful because the X,Y, and Z images</c>
 <c>* are drawn from the same perspective as the rectified camera image.</c>
-<l>ensenso_get_cam_params_rect (AcqHandle, CamParam0, CamParam1)</l>
+<l>ensenso_get_cam_params_rect (AcqHandle0, CamParam0, CamParam1)</l>
+<c></c>
 <c>*gets the pose of the left camera</c>
 <l>ensenso_get_pose(NxLibHandle,[],[],EnsensoLeftCamPose)</l>
 <l>render_object_model_3d(Image,OM3D,CamParam0,EnsensoLeftCamPose,['lut','intensity'],['rainbow','coord_z'])</l>
-<l>disp_continue_message (200000,'black', 'true')</l>
+<l>disp_message(WindowHandle,'rendering from camera view','window',12,12,'black','true')</l>
+<l>disp_continue_message (WindowHandle,'black', 'true')</l>
+<l>stop()</l>
+<c></c>
+<l>ArbitraryPose := EnsensoLeftCamPose</l>
+<l>ArbitraryPose[3] := EnsensoLeftCamPose[3]-1.0</l>
+<l>ArbitraryPose[4] := EnsensoLeftCamPose[4]+2.0</l>
+<l>ArbitraryPose[5] := EnsensoLeftCamPose[5]-4.0</l>
+<l>render_object_model_3d(Image,OM3D,CamParam0,ArbitraryPose,['lut','intensity'],['rainbow','coord_z'])</l>
+<l>disp_message(WindowHandle,'rendering from camera view','window',12,12,'black','true')</l>
+<l>disp_continue_message (WindowHandle,'black', 'true')</l>
 <l>stop()</l>
 <c></c>
 <c></c>
+<c>*===============================================</c>
+<c>* TEST: Given default Gen Params, return nothing</c>
+<c>*===============================================</c>
+<l>GenParamNames := []</l>
+<l>GenParamValues := []</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'num_points',NumPointsInModel)</l>
+<l>catch(ex)</l>
+<l>    NumPointsInModel := 0</l>
+<l>endtry</l>
 <c></c>
+<l>if(NumPointsInModel + ImageOrderLength + NumImages + NumRegions == 0)</l>
+<c>    *passed</c>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>endif</l>
+<c></c>
+<l>try</l>
+<l>    clear_object_model_3d (TestOM3D)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
+<c></c>
+<c>*===============================================</c>
+<c>* TEST: Return Right Rect Only</c>
+<c>*===============================================</c>
+<l>GenParamNames := ['right_rect']</l>
+<l>GenParamValues := ['true']</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'num_points',NumPointsInModel)</l>
+<l>catch(ex)</l>
+<l>    NumPointsInModel := 0</l>
+<l>endtry</l>
+<c></c>
+<l>if(NumPointsInModel + NumRegions == 0)</l>
+<l>    if(NumImages == 1 and ImageOrderLength == 1 and ImageOrder == 'Right')</l>
+<c>        *passed</c>
+<l>    else</l>
+<l>        TEST FAILED</l>
+<l>    endif</l>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>endif</l>
+<c></c>
+<c>*===============================================</c>
+<c>* TEST: Return Left Rect Only</c>
+<c>*===============================================</c>
+<l>GenParamNames := ['right_rect']</l>
+<l>GenParamValues := ['true']</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'num_points',NumPointsInModel)</l>
+<l>catch(ex)</l>
+<l>    NumPointsInModel := 0</l>
+<l>endtry</l>
+<c></c>
+<l>if(NumPointsInModel + NumRegions == 0)</l>
+<l>    if(NumImages == 1 and ImageOrderLength == 1 and ImageOrder == 'Left')</l>
+<c>        *passed</c>
+<l>    else</l>
+<l>        TEST FAILED</l>
+<l>    endif</l>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>endif</l>
+<c></c>
+<c>*===============================================</c>
+<c>* TEST: Return Left and Right Rect</c>
+<c>*===============================================</c>
+<l>GenParamNames := ['right_rect', 'left_rect']</l>
+<l>GenParamValues := ['true', 'true']</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'num_points',NumPointsInModel)</l>
+<l>catch(ex)</l>
+<l>    NumPointsInModel := 0</l>
+<l>endtry</l>
+<c></c>
+<l>if(NumPointsInModel + NumRegions == 0)</l>
+<l>    if(NumImages == 2 and ImageOrderLength == 2 and ImageOrder[0] == 'Left' and ImageOrder[1] == 'Right')</l>
+<c>        *passed</c>
+<l>    else</l>
+<l>        TEST FAILED</l>
+<l>    endif</l>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>endif</l>
+<c></c>
+<c>*===============================================</c>
+<c>* TEST: Return XYZ Only</c>
+<c>*===============================================</c>
+<l>GenParamNames := ['xyz']</l>
+<l>GenParamValues := ['true']</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'num_points',NumPtsOM3D)</l>
+<l>catch(ex)</l>
+<l>    NumPtsOM3D := 0</l>
+<l>endtry</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'point_normal_x',Norms)</l>
+<l>catch(ex)</l>
+<l>    Norms := 0</l>
+<l>endtry</l>
+<c></c>
+<l>if(Norms + ImageOrderLength + NumImages + NumRegions == 0)</l>
+<l>    if(NumPtsOM3D &gt; 0)</l>
+<c>        *passed</c>
+<l>    else</l>
+<l>        TEST FAILED</l>
+<l>    endif</l>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>endif</l>
+<c></c>
+<l>try</l>
+<l>    clear_object_model_3d (TestOM3D)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
+<c></c>
+<c></c>
+<c>*===============================================</c>
+<c>* TEST: Return XYZ and Disparity</c>
+<c>*===============================================</c>
+<l>GenParamNames := ['xyz','disparity']</l>
+<l>GenParamValues := ['true','true']</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'num_points',NumPtsOM3D)</l>
+<l>catch(ex)</l>
+<l>    NumPtsOM3D := 0</l>
+<l>endtry</l>
+<c></c>
+<l>if(NumRegions == 0)</l>
+<l>    if(NumImages == 1 and ImageOrderLength == 1 and NumPtsOM3D &gt; 0)</l>
+<c>        *passed</c>
+<l>    else</l>
+<l>        TEST FAILED</l>
+<l>    endif</l>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>endif</l>
+<c></c>
+<l>try</l>
+<l>    clear_object_model_3d (TestOM3D)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
+<c></c>
+<c>*===============================================</c>
+<c>* TEST: Return XYZ and a Projection</c>
+<c>*===============================================</c>
+<l>GenParamNames := ['xyz' , 'flexview', 'ortho', 'ortho_width','ortho_height','pixel_size','surf_connect']</l>
+<l>GenParamValues :=['true', 16        , 'true' , 2000         , 2000         , 1          , 10]</l>
+<l>ensenso_grab (Images, Regions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, OM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'point_normal_x',Norms)</l>
+<l>catch(ex)</l>
+<l>    Norms := 0</l>
+<l>endtry</l>
+<c></c>
+<l>if(Norms + NumRegions == 0)</l>
+<l>    if(NumImages == 1 and ImageOrderLength == 1)</l>
+<c>        *passed</c>
+<l>    else</l>
+<l>        TEST FAILED</l>
+<l>    endif</l>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>endif</l>
+<c></c>
+<l>try</l>
+<l>    clear_object_model_3d (TestOM3D)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
+<c></c>
+<c>*===============================================</c>
+<c>* TEST: Return XYZ with Normal Vectors</c>
+<c>*===============================================</c>
+<l>GenParamNames := ['xyz','normals']</l>
+<l>GenParamValues := ['true','true']</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'point_normal_x',Norms)</l>
+<l>catch(ex)</l>
+<l>    Norms := 0</l>
+<l>endtry</l>
+<c></c>
+<l>if(ImageOrderLength + NumImages + NumRegions == 0)</l>
+<l>    if(|Norms| &gt; 0)</l>
+<c>        *passed</c>
+<l>    else</l>
+<l>        TEST FAILED</l>
+<l>    endif</l>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>endif</l>
+<c></c>
+<l>try</l>
+<l>    clear_object_model_3d (TestOM3D)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
 <c></c>
 <c>*==========================================</c>
 <c>* DEMO: Change the device pose</c>
 <c>*==========================================</c>
 <l>dev_clear_window()</l>
+<c></c>
+<c>*here's an example rendering an orthographic projection</c>
+<l>GenParamNames := ['xyz' , 'flexview', 'ortho', 'ortho_width','ortho_height','pixel_size','surf_connect']</l>
+<l>GenParamValues :=['true', 'false'   , 'true' , 2000         , 2000         , 1          , 10]</l>
+<l>ensenso_grab (Images, Regions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, OM3D)</l>
+<c></c>
+<c>*Get the current pose and use it to render an image</c>
+<l>ensenso_get_pose (NxLibHandle, [], [], EnsensoLeftCamPose)</l>
+<l>disp_object_model_3d(WindowHandle,OM3D,CamParam0,EnsensoLeftCamPose,['lut','intensity'],['rainbow','coord_z'])</l>
+<l>disp_message(WindowHandle,'the ensenso\'s current pose','window', 12, 12, 'black', 'true')</l>
+<l>disp_continue_message (WindowHandle,'black', 'true')</l>
+<l>stop()</l>
+<c></c>
 <c>*set device pose</c>
-<l>PoseInWorldCoordinates := EnsensoLeftCamPose</l>
-<l>PoseInWorldCoordinates[2] := PoseInWorldCoordinates[2]+1000</l>
-<l>ensenso_set_pose (NxLibHandle, PoseInWorldCoordinates)</l>
-<c>*gets the pose of the left camera</c>
-<l>ensenso_get_pose(NxLibHandle,[],[],EnsensoLeftCamPoseNew)</l>
-<l>render_object_model_3d(Image,OM3D,CamParam0,EnsensoLeftCamPoseNew,['lut','intensity'],['rainbow','coord_z'])</l>
-<l>disp_message(200000,'the ensenso has been moved 300mm in the z-coordinate','window', 12, 12, 'black', 'true')</l>
-<l>disp_continue_message (200000,'black', 'true')</l>
+<l>EnsensoLeftCamPoseNew := EnsensoLeftCamPose</l>
+<l>EnsensoLeftCamPoseNew[2] := EnsensoLeftCamPoseNew[2]+1000</l>
+<l>ensenso_set_pose (NxLibHandle, EnsensoLeftCamPoseNew)</l>
+<l>disp_object_model_3d(WindowHandle,OM3D,CamParam0,EnsensoLeftCamPoseNew,['lut','intensity'],['rainbow','coord_z'])</l>
+<l>disp_message(WindowHandle,'the ensenso has been moved 1000mm in the z-coordinate','window', 12, 12, 'black', 'true')</l>
+<l>disp_continue_message (WindowHandle,'black', 'true')</l>
+<l>stop()</l>
+<c></c>
+<c>*reset the device pose</c>
+<l>ensenso_set_pose (NxLibHandle, EnsensoLeftCamPose)</l>
+<l>disp_object_model_3d(WindowHandle,OM3D,CamParam0,EnsensoLeftCamPose,['lut','intensity'],['rainbow','coord_z'])</l>
+<l>disp_message(WindowHandle,'the ensenso pose has been restored','window', 12, 12, 'black', 'true')</l>
+<l>disp_continue_message (WindowHandle,'black', 'true')</l>
 <l>stop()</l>
 <c></c>
 <c></c>
@@ -103,7 +363,7 @@
 <c>*==========================================</c>
 <c></c>
 <c>*gets camera parameters from the device</c>
-<l>ensenso_get_cam_params_rect (AcqHandle, CamParam0, CamParam1)</l>
+<l>ensenso_get_cam_params_rect (AcqHandle0, CamParam0, CamParam1)</l>
 <c></c>
 <c>*read calibration from a file</c>
 <l>ensenso_read_calibration ('calibration.json', CalParameterNames, CalParameterValues, CalibrationJSON1)</l>
@@ -125,7 +385,7 @@
 <c>    * Note: CalParameters is applied first, then CalNames and CalValues</c>
 <l>    CalParameterNames := []</l>
 <l>    CalParameterValues := []</l>
-<l>    ensenso_set_calibration (AcqHandle, CALIB, CalParameterNames, CalParameterValues)</l>
+<l>    ensenso_set_calibration (AcqHandle0, CALIB, CalParameterNames, CalParameterValues)</l>
 <c>    </c>
 <c>    *get device pose</c>
 <l>    GenParamNames := ['pose',   'pose_order']</l>
@@ -134,17 +394,17 @@
 <c>    </c>
 <l>    GenParamNames := ['xyz',  'left_rect', 'right_rect', 'disparity', 'regions', 'light_on', 'flexview']</l>
 <l>    GenParamValues :=['true', 'true',      'true',       'false',     'false',   'false',    1]</l>
-<l>    ensenso_grab (Images, Regions, AcqHandle, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder)</l>
-<l>    select_obj(Images,Z,3)</l>
-<l>    dev_display(Z)</l>
-<l>    disp_message(200000, 'Ensenso Pose','window', 12, 12, 'black', 'true')</l>
-<l>    disp_message(200000, EnsensoPose,'window',34, 12, 'black', 'true')</l>
-<l>    disp_3d_coord_system (200000,CamParam0,EnsensoPose,500)</l>
+<l>    ensenso_grab (Images, Regions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, ObjectModel3D)</l>
+<l>    disp_object_model_3d(WindowHandle,OM3D,CamParam0,EnsensoLeftCamPose,['lut','intensity'],['rainbow','coord_z'])</l>
+<l>    disp_message(WindowHandle, 'Using Calibration '+i%2,'window', 12, 300, 'black', 'true')</l>
+<l>    disp_message(WindowHandle, 'Ensenso Pose','window', 12, 12, 'black', 'true')</l>
+<l>    disp_message(WindowHandle, EnsensoPose,'window',34, 12, 'black', 'true')</l>
+<l>    disp_3d_coord_system (WindowHandle,CamParam0,EnsensoPose,500)</l>
 <l>endfor</l>
 <l>count_seconds(end)</l>
 <l>average := ((end-start)/10.0)</l>
-<l>disp_message(200000, 'average cycle time (10 iterations) = ' + average + ' sec','window', 200, 12, 'black', 'true')</l>
-<l>disp_continue_message(200000,'black', 'true')</l>
+<l>disp_message(WindowHandle, 'average cycle time (10 iterations) = ' + average + ' sec','window', 200, 12, 'black', 'true')</l>
+<l>disp_continue_message(WindowHandle,'black', 'true')</l>
 <l>stop()</l>
 <c></c>
 <c></c>
@@ -155,11 +415,16 @@
 <c>* Post Process/Cleanup </c>
 <c>*==========================================</c>
 <l>dev_clear_window()</l>
-<l>disp_message(200000,'releasing ensenso handles...','window', 12, 12, 'black', 'true')</l>
+<l>disp_message(WindowHandle,'Releasing ensenso handles...','window', 12, 12, 'black', 'true')</l>
 <c>*Opening frame grabber takes for-ever (several seconds) so only close when idle</c>
-<l>ensenso_try_close (AcqHandle, NxLibHandle)</l>
+<l>ensenso_try_close (AcqHandle0, NxLibHandle, Error)</l>
 <c></c>
-<l>disp_end_of_program_message(200000,'black','true')</l>
+<l>if(Error != 0)</l>
+<l>    disp_message(WindowHandle,'Release handles failed.  Error code '+Error,'window', 35, 12, 'black', 'true')</l>
+<l>else</l>
+<l>    disp_message(WindowHandle,'Done','window', 35, 12, 'black', 'true')    </l>
+<l>endif</l>
+<l>disp_end_of_program_message(WindowHandle,'black','true')</l>
 </body>
 <docu id="main">
 <parameters/>

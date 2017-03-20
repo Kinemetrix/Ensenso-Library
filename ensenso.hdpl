@@ -461,17 +461,18 @@
 <l>    try</l>
 <l>        if(|GrabDataItems| &gt; 0)</l>
 <l>            set_framegrabber_param (AcqHandle, 'grab_data_items', GrabDataItems)</l>
-<l>            grab_data (DeviceImages, Region, Contours, AcqHandle, Data)</l>
+<l>            grab_data (DeviceImages, Regions, Contours, AcqHandle, Data)</l>
+<l>            concat_obj(Images, DeviceImages, Images)</l>
+<l>            count_obj(DeviceImages,numDevImages)</l>
+<l>            tuple_concat(ImageOrder, GrabDataItems, ImageOrder)</l>
 <l>        endif</l>
 <c>        </c>
 <l>        if(|GrabDataItemsRoot| &gt; 0)</l>
 <l>            set_framegrabber_param (NxLibHandle, 'grab_data_items', GrabDataItemsRoot)</l>
-<l>            grab_data (NxLibImages, Region, Contours, NxLibHandle, Data)</l>
+<l>            grab_data (NxLibImages, UnusedRegion, Contours, NxLibHandle, Data)</l>
 <l>            concat_obj(Images, NxLibImages, Images)</l>
 <l>            count_obj(NxLibImages,numNxImages)</l>
-<l>            for i := 0 to numNxImages-1 by 1</l>
-<l>                tuple_concat(ImageOrder, 'NxLibImages', ImageOrder)</l>
-<l>            endfor</l>
+<l>            tuple_concat(ImageOrder, GrabDataItemsRoot, ImageOrder)</l>
 <l>        endif</l>
 <c>  </c>
 <c>        *This is where the point cloud is created</c>
@@ -484,7 +485,7 @@
 <c>            * +/- 0.5773 is the value assigned to point normal components from points where kernel is degenerate</c>
 <c>            * if you take an L2 norm of [0.5773, 0.5773, 0.5773] in an R3 space, it equals 1.  </c>
 <l>            threshold(ZnImg,ZnMaskRegion,[0,0.5776],[0.5770,9999999999])</l>
-<l>            select_obj(Region,RegionCoords,1)</l>
+<l>            select_obj(Regions,RegionCoords,1)</l>
 <l>            intersection(RegionCoords,ZnMaskRegion, ValidPixelMask)</l>
 <l>            reduce_domain(ZImg,ValidPixelMask, ZImageReduced)</l>
 <l>            xyz_attrib_to_object_model_3d (XImg, YImg, ZImg, NormsImages, ['point_normal_x','point_normal_y','point_normal_z'], ObjectModel3D)</l>
@@ -549,7 +550,7 @@
 <l>        set_framegrabber_param (AcqHandle, 'grab_data_items', GrabList)</l>
 <l>        set_framegrabber_param (NxLibHandle,'do_execute','Capture')</l>
 <l>        set_framegrabber_param (NxLibHandle, 'do_execute', 'RectifyImages')</l>
-<l>        grab_data (EnsensoImages, Region, Contours, AcqHandle, Data)</l>
+<l>        grab_data (EnsensoImages, UnusedRegion, Contours, AcqHandle, Data)</l>
 <c></c>
 <c></c>
 <c>        *Split the L/R Image tuple into individual images (select_obj is NOT a deep copy operation)</c>
@@ -588,7 +589,7 @@
 <c></c>
 <l>if(GetDisparity)</l>
 <l>   set_framegrabber_param (AcqHandle, 'grab_data_items', ['Images/DisparityMap']) </l>
-<l>   grab_data (ImageDisparity, R, C, AcqHandle, D)</l>
+<l>   grab_data (ImageDisparity, UnusedRegion, UnusedContours, AcqHandle, D)</l>
 <l>   concat_obj(Images, ImageDisparity, Images)</l>
 <l>   tuple_concat(ImageOrder, 'Disparity', ImageOrder)</l>
 <l>endif</l>
@@ -1063,6 +1064,8 @@ ensenso_try_close (AcqHandle, NxLibHandle)</example>
 <l>            throw('Connection error: ensenso cannot connect.  Info: '+ Status)</l>
 <l>        endif</l>
 <l>    endif</l>
+<c>    *Default serial</c>
+<l>    SerialNumber := '' </l>
 <l>endif</l>
 <c></c>
 <l>try</l>

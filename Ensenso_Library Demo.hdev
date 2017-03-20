@@ -70,7 +70,7 @@
 <c>*general purpose grab procedure, returns nothing by default. </c>
 <c>* specify the data you want with GenParamNames and GenParamValues</c>
 <l>GenParamNames := ['xyz' ,  'left_rect', 'right_rect', 'disparity', 'regions', 'light_on', 'flexview','normals']</l>
-<l>GenParamValues :=['true',  'true'     , 'false'     , 'false'    , 'false'  , 'true'    , 16        ,'true']</l>
+<l>GenParamValues :=['true',  'true'     , 'false'     , 'false'    , 'true'  , 'true'    , 16        ,'true']</l>
 <l>ensenso_grab (Images, Regions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, OM3D)</l>
 <c></c>
 <c></c>
@@ -94,6 +94,10 @@
 <l>disp_continue_message (WindowHandle,'black', 'true')</l>
 <l>stop()</l>
 <c></c>
+<l>try</l>
+<l>    clear_object_model_3d (TestOM3D)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
 <c></c>
 <c>*===============================================</c>
 <c>* TEST: Given default Gen Params, return nothing</c>
@@ -114,6 +118,7 @@
 <c>    *passed</c>
 <l>else</l>
 <l>    TEST FAILED</l>
+<l>    stop()</l>
 <l>endif</l>
 <c></c>
 <l>try</l>
@@ -141,15 +146,17 @@
 <c>        *passed</c>
 <l>    else</l>
 <l>        TEST FAILED</l>
+<l>        stop()</l>
 <l>    endif</l>
 <l>else</l>
 <l>    TEST FAILED</l>
+<l>    stop()</l>
 <l>endif</l>
 <c></c>
 <c>*===============================================</c>
 <c>* TEST: Return Left Rect Only</c>
 <c>*===============================================</c>
-<l>GenParamNames := ['right_rect']</l>
+<l>GenParamNames := ['left_rect']</l>
 <l>GenParamValues := ['true']</l>
 <l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
 <l>count_obj(TestImages,NumImages)</l>
@@ -166,9 +173,11 @@
 <c>        *passed</c>
 <l>    else</l>
 <l>        TEST FAILED</l>
+<l>        stop()</l>
 <l>    endif</l>
 <l>else</l>
 <l>    TEST FAILED</l>
+<l>    stop()</l>
 <l>endif</l>
 <c></c>
 <c>*===============================================</c>
@@ -191,17 +200,20 @@
 <c>        *passed</c>
 <l>    else</l>
 <l>        TEST FAILED</l>
+<l>        stop()</l>
 <l>    endif</l>
 <l>else</l>
 <l>    TEST FAILED</l>
+<l>    stop()</l>
 <l>endif</l>
 <c></c>
 <c>*===============================================</c>
-<c>* TEST: Return XYZ Only</c>
+<c>* TEST: Return XYZ and Regions</c>
 <c>*===============================================</c>
-<l>GenParamNames := ['xyz']</l>
-<l>GenParamValues := ['true']</l>
-<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>GenParamNames := ['xyz','regions']</l>
+<l>GenParamValues := ['true','true']</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, \
+              GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
 <l>count_obj(TestImages,NumImages)</l>
 <l>count_obj(TestRegions,NumRegions)</l>
 <l>ImageOrderLength := |ImageOrder|</l>
@@ -216,14 +228,56 @@
 <l>    Norms := 0</l>
 <l>endtry</l>
 <c></c>
-<l>if(Norms + ImageOrderLength + NumImages + NumRegions == 0)</l>
-<l>    if(NumPtsOM3D &gt; 0)</l>
+<l>if(Norms == 0 and ImageOrderLength == 1)</l>
+<l>    if(NumPtsOM3D &gt; 0 and NumRegions &gt; 0 and NumImages == 1)</l>
 <c>        *passed</c>
 <l>    else</l>
 <l>        TEST FAILED</l>
+<l>        stop()</l>
 <l>    endif</l>
 <l>else</l>
 <l>    TEST FAILED</l>
+<l>    stop()</l>
+<l>endif</l>
+<c></c>
+<l>try</l>
+<l>    clear_object_model_3d (TestOM3D)</l>
+<l>catch(ex)</l>
+<l>endtry</l>
+<c></c>
+<c></c>
+<c></c>
+<c>*===============================================</c>
+<c>* TEST: Return XYZ Only</c>
+<c>*===============================================</c>
+<l>GenParamNames := ['xyz']</l>
+<l>GenParamValues := ['true']</l>
+<l>ensenso_grab (TestImages, TestRegions, AcqHandle0, NxLibHandle, ExposureGray, Exposure3D, \
+              GenParamNames, GenParamValues, ImageOrder, TestOM3D)</l>
+<l>count_obj(TestImages,NumImages)</l>
+<l>count_obj(TestRegions,NumRegions)</l>
+<l>ImageOrderLength := |ImageOrder|</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'num_points',NumPtsOM3D)</l>
+<l>catch(ex)</l>
+<l>    NumPtsOM3D := 0</l>
+<l>endtry</l>
+<l>try</l>
+<l>    get_object_model_3d_params(TestOM3D,'point_normal_x',Norms)</l>
+<l>catch(ex)</l>
+<l>    Norms := 0</l>
+<l>endtry</l>
+<c></c>
+<l>if(Norms + NumRegions == 0)</l>
+<l>    if(NumPtsOM3D &gt; 0 and NumImages == 1 and ImageOrderLength == 1)</l>
+<c>        *passed</c>
+<l>    else</l>
+<l>        TEST FAILED</l>
+<l>        stop()</l>
+<l>    endif</l>
+<l>else</l>
+<l>    TEST FAILED</l>
+<l>    stop()</l>
 <l>endif</l>
 <c></c>
 <l>try</l>
@@ -248,13 +302,15 @@
 <l>endtry</l>
 <c></c>
 <l>if(NumRegions == 0)</l>
-<l>    if(NumImages == 1 and ImageOrderLength == 1 and NumPtsOM3D &gt; 0)</l>
+<l>    if(NumImages == 2 and ImageOrderLength == 2 and NumPtsOM3D &gt; 0)</l>
 <c>        *passed</c>
 <l>    else</l>
 <l>        TEST FAILED</l>
+<l>        stop()</l>
 <l>    endif</l>
 <l>else</l>
 <l>    TEST FAILED</l>
+<l>    stop()</l>
 <l>endif</l>
 <c></c>
 <l>try</l>
@@ -278,13 +334,15 @@
 <l>endtry</l>
 <c></c>
 <l>if(Norms + NumRegions == 0)</l>
-<l>    if(NumImages == 1 and ImageOrderLength == 1)</l>
+<l>    if(NumImages == 2 and ImageOrderLength == 2)</l>
 <c>        *passed</c>
 <l>    else</l>
 <l>        TEST FAILED</l>
+<l>        stop()</l>
 <l>    endif</l>
 <l>else</l>
 <l>    TEST FAILED</l>
+<l>    stop()</l>
 <l>endif</l>
 <c></c>
 <l>try</l>
@@ -307,14 +365,16 @@
 <l>    Norms := 0</l>
 <l>endtry</l>
 <c></c>
-<l>if(ImageOrderLength + NumImages + NumRegions == 0)</l>
+<l>if(ImageOrderLength == 2 and NumImages == 2 and NumRegions == 2)</l>
 <l>    if(|Norms| &gt; 0)</l>
 <c>        *passed</c>
 <l>    else</l>
 <l>        TEST FAILED</l>
+<l>        stop()</l>
 <l>    endif</l>
 <l>else</l>
 <l>    TEST FAILED</l>
+<l>    stop()</l>
 <l>endif</l>
 <c></c>
 <l>try</l>
